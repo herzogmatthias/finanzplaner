@@ -1,0 +1,6 @@
+[submodule "API/FinancePlaner"]
+	path = API/FinancePlaner
+	url = https://github.com/Lucca1805/FinancePlaner.git
+[submodule "Backend/FinancePlaner"]
+	path = Backend/FinancePlaner
+	url = https://github.com/Lucca1805/FinancePlaner.git
