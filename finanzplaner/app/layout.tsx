@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import Navbar from "@/components/navbar/navbar.component";
+import SideNav from "@/components/sidenav/sidenav.component";
+import { Box } from "@chakra-ui/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +23,12 @@ export default function RootLayout({
       <body style={{ minHeight: "100vh" }}>
         <Providers>
           <Navbar />
-          {children}
+          <Box display={"flex"}>
+            <Box>
+              <SideNav />
+            </Box>
+            <Box flex={1}>{children}</Box>
+          </Box>
         </Providers>
       </body>
     </html>
