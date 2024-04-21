@@ -42,8 +42,6 @@ ChartJS.register(
   TimeScale
 );
 
-const options: ChartOptions = {};
-
 const CreditSimulator = () => {
   // State for input values
   const [financingAmount, setFinancingAmount] = useState("");
@@ -51,6 +49,12 @@ const CreditSimulator = () => {
   const [annualInterest, setAnnualInterest] = useState("");
   const [otherCosts, setOtherCosts] = useState("");
   const [residualDebt, setResidualDebt] = useState("");
+  const [calculationResults, setCalculationResults] = useState({
+    effectiveInterestRate: "*.**",
+    monthlyRate: "**.**",
+    interestExpense: "**.**",
+    totalCreditCost: "**.**",
+  });
 
   // State for chart data
   const [chartData, setChartData] = useState({
@@ -65,42 +69,53 @@ const CreditSimulator = () => {
       },
     ],
   });
-
   const calculateCredit = () => {
-    const monthlyInterestRate = parseFloat(annualInterest) / 100 / 12;
-    const totalMonths = parseInt(term, 10) * 12;
-    let initialBalance = parseFloat(financingAmount);
-    let additionalCosts = parseFloat(otherCosts || "0");
-    let balance = initialBalance + additionalCosts;
-    const residualDebtAmount = parseFloat(residualDebt || "0");
-    let monthlyRate =
-      (balance * monthlyInterestRate) /
-      (1 - Math.pow(1 / (1 + monthlyInterestRate), totalMonths));
-
-    let reachedResidual = false;
-
+    const principal = parseFloat(financingAmount); // Total loan amount
+    const yearlyNominalRate = parseFloat(annualInterest) / 100;
+    const totalYears = parseInt(term, 10);
+    const totalMonths = totalYears * 12;
+    const residualDebtAmount = parseFloat(residualDebt || "0"); // Desired residual value
+    const monthlyNominalRate = yearlyNominalRate / 12;
     const labels = [];
     const data = [];
+
+    // Calculate the monthly payment that will leave the residual value at the end of the term
+    let monthlyPayment =
+      ((principal -
+        residualDebtAmount / Math.pow(1 + monthlyNominalRate, totalMonths)) *
+        monthlyNominalRate) /
+      (1 - Math.pow(1 + monthlyNominalRate, -totalMonths));
+
+    let balance = principal;
+    let totalInterestPaid = 0;
     let currentDate = new Date();
-
     for (let month = 1; month <= totalMonths; month++) {
-      const label = format(addMonths(currentDate, month), "MM/yyyy");
+      const label = format(addMonths(currentDate, month - 1), "MM/yyyy");
       labels.push(label);
-      let interestForThisMonth = balance * monthlyInterestRate;
-      let principalForThisMonth = monthlyRate - interestForThisMonth;
+      let interestPayment = balance * monthlyNominalRate;
+      let principalPayment = monthlyPayment - interestPayment;
 
-      if (balance - principalForThisMonth <= residualDebtAmount) {
-        principalForThisMonth = balance - residualDebtAmount; // Adjust principal to not go below residual debt
-        reachedResidual = true; // Mark that we've reached residual debt
-      }
-
-      balance -= principalForThisMonth;
-      data.push(balance.toFixed(2));
-
-      if (reachedResidual) {
-        break; // Stop the loop
-      }
+      // Accumulate the interest paid
+      totalInterestPaid += interestPayment;
+      // Reduce the balance by the principal payment
+      balance -= principalPayment;
+      data.push(Math.abs(balance).toFixed(2));
     }
+
+    // The total amount paid includes all payments plus the residual debt
+    let totalPaid = monthlyPayment * totalMonths + residualDebtAmount;
+
+    // Effective interest rate (annual) is calculated based on the nominal rate
+    const effectiveInterestRate =
+      (Math.pow(1 + monthlyNominalRate, 12) - 1) * 100;
+
+    // Update the calculation results state
+    setCalculationResults({
+      monthlyRate: monthlyPayment.toFixed(2),
+      interestExpense: totalInterestPaid.toFixed(2),
+      totalCreditCost: totalPaid.toFixed(2),
+      effectiveInterestRate: effectiveInterestRate.toFixed(2),
+    });
 
     setChartData({
       labels,
@@ -132,7 +147,7 @@ const CreditSimulator = () => {
           <Heading as="h2" size="lg" mb={4}>
             Daten
           </Heading>
-          <VStack spacing={4}>
+          <VStack spacing={6}>
             <FormControl id="financingAmount" isRequired>
               <FormLabel>Finanzierungsbetrag</FormLabel>
               <Input
@@ -157,14 +172,6 @@ const CreditSimulator = () => {
                 onChange={(e) => setAnnualInterest(e.target.value)}
               />
             </FormControl>
-            <FormControl id="otherCosts">
-              <FormLabel>Andere Kosten</FormLabel>
-              <Input
-                type="number"
-                value={otherCosts}
-                onChange={(e) => setOtherCosts(e.target.value)}
-              />
-            </FormControl>
             <FormControl id="residualDebt">
               <FormLabel>Restschuld</FormLabel>
               <Input
@@ -184,15 +191,70 @@ const CreditSimulator = () => {
           flexDirection={"column"}
           justifyContent={"space-between"}
         >
-          <Box boxShadow={"md"} p={5}>
+          <Box mb={2} boxShadow={"md"} p={5}>
             <Heading as="h2" size="lg" mb={4}>
               Berechnung
             </Heading>
-            {/* Placeholder for calculation results */}
-            {/* ... */}
+            <VStack spacing={4}>
+              <Box
+                width={"100%"}
+                display={"flex"}
+                justifyContent={"space-between"}
+              >
+                <div>
+                  <Text as={"b"}>Effektiver Zinssatz: </Text>
+                </div>
+                <div>
+                  <Text as={"b"}>
+                    {calculationResults.effectiveInterestRate}%
+                  </Text>
+                </div>
+              </Box>
+              <Box
+                width={"100%"}
+                display={"flex"}
+                justifyContent={"space-between"}
+              >
+                <div>
+                  <Text as={"b"}>Kreditrate (monatlich):</Text>
+                </div>
+                <div>
+                  <Text as={"b"}>{calculationResults.monthlyRate} €</Text>
+                </div>
+              </Box>
+              <Box
+                width={"100%"}
+                display={"flex"}
+                justifyContent={"space-between"}
+              >
+                <div>
+                  <Text as={"b"}>Zinsaufwand: </Text>
+                </div>
+                <div>
+                  <Text as={"b"}>{calculationResults.interestExpense} €</Text>
+                </div>
+              </Box>
+              <Box
+                width={"100%"}
+                display={"flex"}
+                justifyContent={"space-between"}
+              >
+                <div>
+                  <Text as={"b"}>Gesamtaufwand für den Kredit: </Text>
+                </div>
+                <div>
+                  <Text as={"b"}>{calculationResults.totalCreditCost} €</Text>
+                </div>
+              </Box>
+            </VStack>
           </Box>
 
-          <Box p={5} bg={useColorModeValue("white", "gray.700")} boxShadow="md">
+          <Box
+            mt={2}
+            p={5}
+            bg={useColorModeValue("white", "gray.700")}
+            boxShadow="md"
+          >
             <Heading as="h2" size="lg" mb={4} mt={8}>
               Verlauf
             </Heading>
