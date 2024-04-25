@@ -12,19 +12,16 @@ import {
 import { ICreditDetails } from "./ICreditDetails.props";
 import { IDetailItem } from "./IDetailItem.props";
 
-const CreditDetails = ({ creditName }: ICreditDetails) => {
-  // Example props - replace with your actual fetching logic
-  const creditData = {
-    loanAmount: 100000, // The principal amount of the loan
-    annualRate: 8, // Annual interest rate
-    effectiveRate: 8.3, // Effective interest rate
-    term: 40, // Term of the loan in years
-    totalAmount: 123000, // Total amount to be repaid
-    otherFeesPA: 1000, // Other fees
-    startDate: new Date("2021-01-01"), // Start date of the loan
-    paymentRate: "monthly", // Payment frequency
-    nextPaymentDate: new Date("2021-02-01"), // Next payment date
-  };
+const CreditDetails = ({
+  annualRate,
+  loanAmount,
+  nextPaymentDate,
+  otherFeesPA,
+  startDate,
+  term,
+  totalAmount,
+  effectiveRate,
+}: ICreditDetails) => {
   const calculateMonthlyPayment = (
     loanAmount: number,
     annualRate: number,
@@ -72,25 +69,27 @@ const CreditDetails = ({ creditName }: ICreditDetails) => {
 
   //calculate years passed
   const currentDate = new Date();
-  const yearsPassed =
-    currentDate.getFullYear() - creditData.startDate.getFullYear();
+  const yearsPassed = currentDate.getFullYear() - startDate.getFullYear();
   const monthlyPayment = calculateMonthlyPayment(
-    creditData.loanAmount,
-    creditData.annualRate,
-    creditData.term,
-    creditData.otherFeesPA
+    loanAmount,
+    annualRate,
+    term,
+    otherFeesPA
   );
   const amountPaidBack = calculateAmountPaidBack(
     monthlyPayment,
-    creditData.startDate,
+    startDate,
     new Date() // assuming the current date is the date of calculation
   );
 
-  const paidPercentage = (amountPaidBack / creditData.totalAmount) * 100;
-  const yearsPassedPercentage = (yearsPassed / creditData.term) * 100;
+  const paidPercentage = (amountPaidBack / totalAmount) * 100;
+  const yearsPassedPercentage = (yearsPassed / term) * 100;
 
   const formatCurrency = (amount: number) =>
-    `€ ${amount.toLocaleString("de-DE", { maximumFractionDigits: 2 })}`;
+    `${new Intl.NumberFormat("de-DE", {
+      style: "currency",
+      currency: "EUR",
+    }).format(amount)}`;
   const formatPercentage = (percentage: number) =>
     `${percentage.toLocaleString("de-DE", { maximumFractionDigits: 2 })} %`;
 
@@ -99,31 +98,31 @@ const CreditDetails = ({ creditName }: ICreditDetails) => {
       <VStack spacing={8} align="stretch">
         <DetailItem
           label="Kreditbetrag"
-          value={formatCurrency(creditData.loanAmount)}
+          value={formatCurrency(loanAmount)}
           progress={0}
           tooltipLabel={""}
         />
         <DetailItem
           label="Zinssatz"
-          value={formatPercentage(creditData.annualRate)}
+          value={formatPercentage(annualRate)}
           progress={0}
           tooltipLabel={""}
         />
         <DetailItem
           label="Andere Kosten pro Jahr"
-          value={formatCurrency(creditData.otherFeesPA)}
+          value={formatCurrency(otherFeesPA)}
           progress={0}
           tooltipLabel={""}
         />
         <DetailItem
           label="Laufzeit"
-          value={`${creditData.term} Jahre`}
+          value={`${term} Jahre`}
           progress={yearsPassedPercentage}
           tooltipLabel={yearsPassed > 0 ? `${yearsPassed} Jahre` : "0 Jahre"}
         />
         <DetailItem
           label="Gesamtbetrag"
-          value={formatCurrency(creditData.totalAmount)}
+          value={formatCurrency(totalAmount)}
           progress={paidPercentage}
           tooltipLabel={formatCurrency(amountPaidBack)}
         />
@@ -138,13 +137,13 @@ const CreditDetails = ({ creditName }: ICreditDetails) => {
         />
         <DetailItem
           label="Nächster Zahlungstermin"
-          value={creditData.nextPaymentDate.toLocaleDateString("de-DE")}
+          value={nextPaymentDate.toLocaleDateString("de-DE")}
           progress={0}
           tooltipLabel={""}
         />
         <DetailItem
           label="Effektiver Zinssatz"
-          value={formatPercentage(creditData.effectiveRate)}
+          value={formatPercentage(effectiveRate)}
           progress={0}
           tooltipLabel={""}
         />
