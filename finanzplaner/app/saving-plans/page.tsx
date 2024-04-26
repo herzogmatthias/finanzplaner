@@ -9,13 +9,20 @@ import {
   Icon,
   SimpleGrid,
 } from "@chakra-ui/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MdAccountBalance,
   MdDateRange,
   MdPayment,
   MdOutlineTrendingUp,
 } from "react-icons/md";
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
+import HighchartsSankey from "highcharts/modules/sankey";
+import { color } from "highcharts";
+
+// Initialize the Sankey module
+HighchartsSankey(Highcharts);
 
 function GroupedSavingsPlans() {
   const plans: any[] = [
@@ -53,6 +60,13 @@ function GroupedSavingsPlans() {
       name: "School Fees",
     },
   ];
+  const data = [
+    ["Savings Account", "Bank A", 500],
+    ["Bank A", "Car Loan", 200],
+    ["Savings Account", "Bank B", 300],
+    ["Bank B", "Home Loan", 300],
+    // ...add more as needed
+  ];
   // Group plans by accountName
   const groupedPlans = useMemo(() => {
     return plans.reduce((acc, plan) => {
@@ -61,6 +75,38 @@ function GroupedSavingsPlans() {
       return acc;
     }, {});
   }, [plans]);
+
+  const options = {
+    title: {
+      text: "",
+    },
+    credits: {
+      enabled: false,
+    },
+    tooltip: {
+      headerFormat: null,
+      pointFormat:
+        "{point.fromNode.name} \u2192 {point.toNode.name}: {point.weight:.2f} " +
+        "€",
+      nodeFormat: "{point.name}: {point.sum:.2f} €",
+    },
+    series: [
+      {
+        keys: ["from", "to", "weight"],
+        data: data,
+        type: "sankey",
+        name: "Geldfluss",
+      },
+    ],
+    plotOptions: {
+      series: {
+        colorByPoint: true,
+      },
+      sankey: {
+        color: ["red", "#FFC300", "#DAF7A6"],
+      },
+    },
+  };
 
   const cardBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.600", "gray.200");
@@ -71,12 +117,27 @@ function GroupedSavingsPlans() {
       <Heading as="h1" size="xl" mb={6}>
         Sparpläne
       </Heading>
+      <Box
+        p={5}
+        shadow="md"
+        borderWidth="1px"
+        borderRadius="lg"
+        bg={cardBg}
+        ml={8}
+        mb={8}
+        mr={12}
+      >
+        <Heading as="h2" size="lg">
+          Geldfluss
+        </Heading>
+        <HighchartsReact highcharts={Highcharts} options={options} />
+      </Box>
       <SimpleGrid ml={8} columns={{ sm: 1, md: 2, lg: 3 }} spacing={10}>
         {Object.entries(groupedPlans).map(([accountName, plans]) => (
           <Box
             key={accountName}
             p={5}
-            shadow="xl"
+            shadow="md"
             borderWidth="1px"
             borderRadius="lg"
             bg={cardBg}
