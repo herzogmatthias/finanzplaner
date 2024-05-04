@@ -17,7 +17,7 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import { MdAccountCircle } from "react-icons/md";
+import { MdAccountCircle, MdMenu, MdClose } from "react-icons/md";
 import { useApp } from "@/context/app.context";
 
 const Navbar = () => {
@@ -47,16 +47,28 @@ const Navbar = () => {
       padding={3}
       bg={bgColor}
     >
-      <Box
-        color="white"
-        fontWeight="bold"
-        letterSpacing="wide"
-        fontSize="xl"
-        userSelect="none"
-        cursor={"pointer"}
-        onClick={() => router.push("/")}
-      >
-        Finanzplaner
+      <Box display={"flex"} alignItems={"center"}>
+        <IconButton
+          aria-label="Open Menu"
+          icon={<Icon size={"lg"} as={app?.isNavOpen ? MdClose : MdMenu} />}
+          onClick={() => app?.toggleNav()}
+          variant="solid"
+          color={"white"}
+          colorScheme="blue"
+          marginRight={4}
+          display={{ base: "flex" }} // Adjust visibility responsive
+        />
+        <Box
+          color="white"
+          fontWeight="bold"
+          letterSpacing="wide"
+          fontSize="xl"
+          userSelect="none"
+          cursor={"pointer"}
+          onClick={() => router.push("/")}
+        >
+          Finanzplaner
+        </Box>
       </Box>
 
       {isLoggedIn ? (
