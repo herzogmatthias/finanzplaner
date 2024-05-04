@@ -10,22 +10,27 @@ export class UserService {
     return UserService.instance;
   }
   //login method post request to the server with error handling and return error message if login fails
-  async login(username: string, password: string): Promise<string> {
+  async login(
+    username: string,
+    password: string
+  ): Promise<{ error: boolean; msg: string }> {
     try {
-      const response = await fetch("http://localhost:5200/login", {
+      const response = await fetch("http://localhost:5200/Login/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, password }),
       });
+      const body = await response.json();
       if (response.ok) {
-        return "";
+        localStorage.setItem("jwt", body.jwt);
+        return { error: false, msg: "Login Successful" };
       } else {
-        return "Login failed";
+        return { error: true, msg: body.title };
       }
     } catch (error) {
-      return "Login failed";
+      return { error: true, msg: "Login failed" };
     }
   }
 
@@ -51,5 +56,15 @@ export class UserService {
     } catch (error) {
       return "Registration failed";
     }
+  }
+  setJWT(jwt: string): void {
+    localStorage.setItem("jwt", jwt);
+  }
+  getJWT(): string {
+    return localStorage.getItem("jwt") || "";
+  }
+
+  deleteJWT(): void {
+    localStorage.removeItem("jwt");
   }
 }

@@ -27,12 +27,22 @@ const SideNav = () => {
   const pathname = usePathname();
   const app = useApp();
   const [activeItem, setActiveItem] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
   const activeBg = useColorModeValue("blue.500", "blue.200"); // active item background color
   const activeHoverBg = useColorModeValue("blue.600", "blue.300"); // active item hover background color
 
   //listen to route change and set active item
   useEffect(() => {
     console.log(pathname);
+    if (
+      sections.some((section) =>
+        section.items.some((item) => item.route === pathname)
+      )
+    ) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
     setActiveItem(pathname);
   }, [pathname]);
 
@@ -78,6 +88,7 @@ const SideNav = () => {
       transition="0.2s ease"
       h="100vh"
       boxShadow="0 4px 12px 0 rgba(0, 0, 0, 0.05)"
+      display={{ base: isVisible ? "block" : "none" }}
     >
       <Flex
         flexDirection="column"

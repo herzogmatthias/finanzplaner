@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -15,27 +15,43 @@ import {
   FormControl,
   FormLabel,
   Input,
+  useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { MdAccountCircle, MdMenu, MdClose } from "react-icons/md";
 import { useApp } from "@/context/app.context";
+import { UserService } from "@/services/User.service";
 
 const Navbar = () => {
   const router = useRouter();
-  const isLoggedIn = Boolean(false);
+  const userService = UserService.getInstance();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const app = useApp();
+  const toast = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     // TODO: Implement your login logic here
-    console.log("Login:", { username, password });
-    // On successful login, set JWT and change isLoggedIn state accordingly
+    const msg = await userService.login(username, password);
+    toast({
+      title: msg.msg,
+      status: msg.error ? "error" : "success",
+      duration: 5000,
+      isClosable: true,
+    });
+    if (!msg.error) {
+      setIsLoggedIn(true);
+    }
   };
   const handleLogout = () => {
-    localStorage.removeItem("jwt");
-    router.refresh();
+    userService.deleteJWT();
+    setIsLoggedIn(false);
   };
+
+  useEffect(() => {
+    setIsLoggedIn(userService.getJWT() !== "");
+  }, []);
 
   const bgColor = useColorModeValue("blue.500", "blue.200");
 
@@ -56,7 +72,7 @@ const Navbar = () => {
           color={"white"}
           colorScheme="blue"
           marginRight={4}
-          display={{ base: "flex" }} // Adjust visibility responsive
+          display={{ base: isLoggedIn ? "flex" : "none" }} // Adjust visibility responsive
         />
         <Box
           color="white"
@@ -65,7 +81,13 @@ const Navbar = () => {
           fontSize="xl"
           userSelect="none"
           cursor={"pointer"}
-          onClick={() => router.push("/")}
+          onClick={() => {
+            if (isLoggedIn) {
+              router.push("/accounts");
+            } else {
+              router.push("/");
+            }
+          }}
         >
           Finanzplaner
         </Box>
