@@ -17,7 +17,7 @@ import {
   Input,
   useToast,
 } from "@chakra-ui/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MdAccountCircle, MdMenu, MdClose } from "react-icons/md";
 import { useApp } from "@/context/app.context";
 import { UserService } from "@/services/User.service";
@@ -28,6 +28,7 @@ const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const app = useApp();
   const toast = useToast();
+  const pathname = usePathname();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -47,6 +48,7 @@ const Navbar = () => {
   const handleLogout = () => {
     userService.deleteJWT();
     setIsLoggedIn(false);
+    router.push("/");
   };
 
   useEffect(() => {
@@ -72,7 +74,7 @@ const Navbar = () => {
           color={"white"}
           colorScheme="blue"
           marginRight={4}
-          display={{ base: isLoggedIn ? "flex" : "none" }} // Adjust visibility responsive
+          display={{ base: isLoggedIn && pathname !== "/" ? "flex" : "none" }} // Adjust visibility responsive
         />
         <Box
           color="white"
