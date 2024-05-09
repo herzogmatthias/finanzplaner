@@ -14,7 +14,7 @@ export const useApp = () => useContext(AppContext);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [isMenuOpen, setMenuOpen] = useState(false);
-  const [isNavOpen, setNavOpen] = useState(false);
+  const [isNavOpen, setNavOpen] = useState(true);
 
   const toggleMenu = () => {
     setMenuOpen(!isMenuOpen);

@@ -88,7 +88,8 @@ const SideNav = () => {
       transition="0.2s ease"
       h="100vh"
       boxShadow="0 4px 12px 0 rgba(0, 0, 0, 0.05)"
-      display={{ base: isVisible ? "block" : "none" }}
+      visibility={{ base: isVisible ? "visible" : "hidden" }}
+      display={{ base: "block" }}
     >
       <Flex
         flexDirection="column"

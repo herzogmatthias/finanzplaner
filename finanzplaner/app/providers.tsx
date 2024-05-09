@@ -2,12 +2,22 @@
 "use client";
 
 import { AppProvider } from "@/context/app.context";
-import { ChakraProvider } from "@chakra-ui/react";
+import { FilterProvider } from "@/context/filter.context";
+import { ChakraProvider, extendTheme } from "@chakra-ui/react";
+import { MultiSelectTheme } from "chakra-multiselect";
+
+const theme = extendTheme({
+  components: {
+    MultiSelect: MultiSelectTheme,
+  },
+});
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ChakraProvider>
-      <AppProvider>{children}</AppProvider>
+    <ChakraProvider theme={theme}>
+      <AppProvider>
+        <FilterProvider>{children}</FilterProvider>
+      </AppProvider>
     </ChakraProvider>
   );
 }

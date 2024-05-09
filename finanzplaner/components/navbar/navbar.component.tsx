@@ -25,7 +25,7 @@ import { UserService } from "@/services/User.service";
 const Navbar = () => {
   const router = useRouter();
   const userService = UserService.getInstance();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
   const app = useApp();
   const toast = useToast();
   const pathname = usePathname();
@@ -52,7 +52,7 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    setIsLoggedIn(userService.getJWT() !== "");
+    //setIsLoggedIn(userService.getJWT() !== "");
   }, []);
 
   const bgColor = useColorModeValue("blue.500", "blue.200");
