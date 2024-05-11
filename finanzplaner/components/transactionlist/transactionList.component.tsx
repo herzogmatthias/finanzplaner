@@ -214,7 +214,7 @@ const TransactionList = () => {
       fetchData(filters);
     });
     return unsubscribe; // Cleanup on unmount
-  });
+  }, []);
 
   // Group transactions by booking date
   const groupedTransactions: [string, any][] = useMemo(() => {

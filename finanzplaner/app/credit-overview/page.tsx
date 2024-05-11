@@ -20,13 +20,19 @@ import {
   TabPanels,
   Tabs,
 } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
 
 import React, { useEffect, useState } from "react";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 
 //create a functional react component
 const CreditOverview = () => {
-  const credits = ["Credit 1", "Credit 2", "Credit 3"];
+  const router = useRouter();
+  const credits = [
+    { creditName: "Credit 1", id: 1 },
+    { creditName: "Credit 2", id: 2 },
+    { creditName: "Credit 3", id: 3 },
+  ];
   const [tabIndex, setTabIndex] = useState(0);
   const [creditData, setCreditData] = useState<ICredit | null>(null);
 
@@ -71,14 +77,22 @@ const CreditOverview = () => {
             >
               <Box flex={1}>
                 <TabList width={"80%"}>
-                  {credits.map((credit, index) => {
-                    return <Tab key={index}>{credit}</Tab>;
+                  {credits.map((credit) => {
+                    return <Tab key={credit.id}>{credit.creditName}</Tab>;
                   })}
                 </TabList>
               </Box>
               <Box>
                 <ButtonGroup isAttached variant={"outline"}>
-                  <Button colorScheme="blue">Ändern</Button>
+                  <Button
+                    colorScheme="blue"
+                    onClick={() => {
+                      //navigate to update credit page
+                      router.push(`/update-credit/${credits[tabIndex].id}`);
+                    }}
+                  >
+                    Ändern
+                  </Button>
                   <Button colorScheme="blue">Löschen</Button>
                   <Menu>
                     <MenuButton
@@ -102,7 +116,7 @@ const CreditOverview = () => {
 
             <TabPanels>
               {credits.map((credit, index) => (
-                <TabPanel key={index}>
+                <TabPanel key={credit.id}>
                   <Box display={"flex"} justifyContent={"space-between"}>
                     <Box flex={1}>
                       {creditData && (

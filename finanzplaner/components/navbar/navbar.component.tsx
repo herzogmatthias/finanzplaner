@@ -102,7 +102,7 @@ const Navbar = () => {
             colorScheme="blue"
             marginRight="4"
             onClick={() => {
-              /* logic to handle 'Kredit hinzufügen' action */
+              router.push("/add-credit");
             }}
           >
             Kredit hinzufügen
