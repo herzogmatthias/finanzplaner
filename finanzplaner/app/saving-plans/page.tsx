@@ -8,8 +8,11 @@ import {
   Flex,
   Icon,
   SimpleGrid,
+  Skeleton,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   MdAccountBalance,
   MdDateRange,
@@ -19,57 +22,120 @@ import {
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import HighchartsSankey from "highcharts/modules/sankey";
-import { color } from "highcharts";
+import { ISavingPlan } from "@/models/ISavingPlan";
+import { SavingPlanService } from "@/services/SavingPlan.service";
 
 // Initialize the Sankey module
 HighchartsSankey(Highcharts);
 
+interface IPlanCardProps {
+  accountName: string;
+  plans: ISavingPlan[];
+  cardBg: string;
+  textColor: string;
+  iconColor: string;
+}
+
+const PlanCard = ({
+  accountName,
+  plans,
+  cardBg,
+  textColor,
+  iconColor,
+}: IPlanCardProps) => (
+  <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg" bg={cardBg}>
+    <Flex alignItems="center" mb={4}>
+      <Icon as={MdAccountBalance} w={8} h={8} color={iconColor} />
+      <Heading size="lg" ml={3}>
+        {accountName}
+      </Heading>
+    </Flex>
+    {plans.map((plan) => (
+      <PlanDetails
+        key={plan.id}
+        plan={plan}
+        textColor={textColor}
+        iconColor={iconColor}
+      />
+    ))}
+  </Box>
+);
+
+interface IPlanDetailsProps {
+  plan: ISavingPlan;
+  textColor: string;
+  iconColor: string;
+}
+
+const PlanDetails = ({ plan, textColor, iconColor }: IPlanDetailsProps) => (
+  <Box
+    p={3}
+    mt={3}
+    borderWidth="1px"
+    borderRadius="md"
+    bg={useColorModeValue("gray.100", "gray.700")}
+  >
+    <Heading size="md" fontWeight="bold" mb={2}>
+      {plan.name}
+    </Heading>
+    <Flex alignItems="center" mb={1}>
+      <Icon as={MdOutlineTrendingUp} w={5} h={5} color={iconColor} />
+      <Text fontSize="lg" ml={2} color={textColor}>
+        {plan.to}
+      </Text>
+    </Flex>
+    <Flex alignItems="center" mb={1}>
+      <Icon as={MdDateRange} w={5} h={5} color={iconColor} />
+      <Text fontSize="lg" ml={2} color={textColor}>
+        Next: {plan.nextPayment}
+      </Text>
+    </Flex>
+    <Flex alignItems="center" mb={1}>
+      <Icon as={MdPayment} w={5} h={5} color={iconColor} />
+      <Text fontSize="lg" ml={2} color={textColor}>
+        Rate: {plan.paymentrate}
+      </Text>
+    </Flex>
+    <Flex alignItems="center" mb={1}>
+      <Icon as={MdPayment} w={5} h={5} color={iconColor} />
+      <Text fontSize="lg" ml={2} color={textColor}>
+        Value: ${plan.value}
+      </Text>
+    </Flex>
+    <Divider my={3} />
+    <Text fontSize="lg" color={textColor}>
+      Until: {plan.until}
+    </Text>
+  </Box>
+);
+
 function GroupedSavingsPlans() {
-  const plans: any[] = [
-    {
-      id: 1,
-      paymentrate: "Monthly",
-      nextPayment: "2024-05-01",
-      to: "Car Loan",
-      value: 200,
-      from: "Bank A",
-      accountName: "Savings Account",
-      until: "2027-05-01",
-      name: "Car Payment",
-    },
-    {
-      id: 2,
-      paymentrate: "Yearly",
-      nextPayment: "2024-12-24",
-      to: "Home Loan",
-      value: 1200,
-      from: "Bank B",
-      accountName: "Main Account",
-      until: "2040-12-24",
-      name: "Mortgage",
-    },
-    {
-      id: 3,
-      paymentrate: "Quarterly",
-      nextPayment: "2024-08-24",
-      to: "Education",
-      value: 450,
-      from: "Bank A",
-      accountName: "Savings Account",
-      until: "2029-08-24",
-      name: "School Fees",
-    },
-  ];
-  const data = [
-    ["Savings Account", "Bank A", 500],
-    ["Bank A", "Car Loan", 200],
-    ["Savings Account", "Bank B", 300],
-    ["Bank B", "Home Loan", 300],
-    // ...add more as needed
-  ];
-  // Group plans by accountName
+  const [plans, setPlans] = useState<ISavingPlan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const service = SavingPlanService.getInstance();
+        const fetchedPlans = await service.fetchPlans();
+        setPlans(fetchedPlans);
+      } catch (err) {
+        setError("Error fetching savings plans.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPlans();
+  }, []);
+
+  const data = plans.flatMap((plan) => [
+    [plan.accountName, plan.from, plan.value],
+    [plan.from, plan.to, plan.value],
+  ]);
+
   const groupedPlans = useMemo(() => {
-    return plans.reduce((acc, plan) => {
+    return plans.reduce<Record<string, ISavingPlan[]>>((acc, plan) => {
       acc[plan.accountName] = acc[plan.accountName] || [];
       acc[plan.accountName].push(plan);
       return acc;
@@ -86,8 +152,7 @@ function GroupedSavingsPlans() {
     tooltip: {
       headerFormat: null,
       pointFormat:
-        "{point.fromNode.name} \u2192 {point.toNode.name}: {point.weight:.2f} " +
-        "€",
+        "{point.fromNode.name} \u2192 {point.toNode.name}: {point.weight:.2f} €",
       nodeFormat: "{point.name}: {point.sum:.2f} €",
     },
     series: [
@@ -112,91 +177,45 @@ function GroupedSavingsPlans() {
   const textColor = useColorModeValue("gray.600", "gray.200");
   const iconColor = useColorModeValue("blue.500", "blue.300");
 
+  if (error) {
+    return (
+      <Box ml={8} mt={8}>
+        <Alert status="error" mb={6}>
+          <AlertIcon />
+          {error}
+        </Alert>
+      </Box>
+    );
+  }
+
   return (
     <Box ml={8} mt={8}>
       <Heading as="h1" size="xl" mb={6}>
         Sparpläne
       </Heading>
-      <Box
-        p={5}
-        shadow="md"
-        borderWidth="1px"
-        borderRadius="lg"
-        bg={cardBg}
-        ml={8}
-        mb={8}
-        mr={12}
-      >
-        <Heading as="h2" size="lg">
-          Geldfluss
-        </Heading>
-        <HighchartsReact highcharts={Highcharts} options={options} />
-      </Box>
+      <Skeleton isLoaded={!isLoading} ml={8} mb={8} mr={12}>
+        <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg" bg={cardBg}>
+          <Heading as="h2" size="lg">
+            Geldfluss
+          </Heading>
+          <HighchartsReact highcharts={Highcharts} options={options} />
+        </Box>
+      </Skeleton>
       <SimpleGrid ml={8} columns={{ sm: 1, md: 2, lg: 3 }} spacing={10}>
-        {Object.entries(groupedPlans).map(([accountName, plans]) => (
-          <Box
-            key={accountName}
-            p={5}
-            shadow="md"
-            borderWidth="1px"
-            borderRadius="lg"
-            bg={cardBg}
-          >
-            <Flex alignItems="center" mb={4}>
-              <Icon as={MdAccountBalance} w={8} h={8} color={iconColor} />
-              <Heading size="lg" ml={3}>
-                {accountName}
-              </Heading>
-            </Flex>
-            {plans.map((plan) => (
-              <Box
-                key={plan.id}
-                p={3}
-                mt={3}
-                borderWidth="1px"
-                borderRadius="md"
-                bg={useColorModeValue("gray.100", "gray.700")}
-              >
-                <Heading size="md" fontWeight="bold" mb={2}>
-                  {plan.name}
-                </Heading>
-                <Flex alignItems="center" mb={1}>
-                  <Icon
-                    as={MdOutlineTrendingUp}
-                    w={5}
-                    h={5}
-                    color={iconColor}
-                  />
-                  <Text fontSize="lg" ml={2} color={textColor}>
-                    {plan.to}
-                  </Text>
-                </Flex>
-                <Flex alignItems="center" mb={1}>
-                  <Icon as={MdDateRange} w={5} h={5} color={iconColor} />
-                  <Text fontSize="lg" ml={2} color={textColor}>
-                    Next: {plan.nextPayment}
-                  </Text>
-                </Flex>
-                <Flex alignItems="center" mb={1}>
-                  <Icon as={MdPayment} w={5} h={5} color={iconColor} />
-                  <Text fontSize="lg" ml={2} color={textColor}>
-                    Rate: {plan.paymentrate}
-                  </Text>
-                </Flex>
-                <Flex alignItems="center" mb={1}>
-                  <Icon as={MdPayment} w={5} h={5} color={iconColor} />
-                  <Text fontSize="lg" ml={2} color={textColor}>
-                    Value: ${plan.value}
-                  </Text>
-                </Flex>
-                <Divider my={3} />
-                <Text fontSize="lg" color={textColor}>
-                  Until: {plan.until}
-                </Text>
-              </Box>
+        {isLoading
+          ? Array.from({ length: 3 }).map((_, idx) => (
+              <Skeleton key={idx} height="300px" />
+            ))
+          : Object.entries(groupedPlans).map(([accountName, plans]) => (
+              <PlanCard
+                key={accountName}
+                accountName={accountName}
+                plans={plans}
+                cardBg={cardBg}
+                textColor={textColor}
+                iconColor={iconColor}
+              />
             ))}
-          </Box>
-        ))}
       </SimpleGrid>
     </Box>
   );

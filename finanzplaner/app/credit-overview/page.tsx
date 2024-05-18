@@ -2,8 +2,10 @@
 import CreditChart from "@/components/creditChart/creditChart.component";
 import CreditDetails from "@/components/creditDetails/creditDetails.component";
 import { ICredit } from "@/models/ICredit";
-//import the necessary modules
+import CreditService from "@/services/Credit.service";
 import {
+  Alert,
+  AlertIcon,
   Box,
   Button,
   ButtonGroup,
@@ -13,52 +15,99 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  Select,
+  Skeleton,
+  SkeletonText,
   Tab,
   TabList,
   TabPanel,
   TabPanels,
   Tabs,
+  Text,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-
 import React, { useEffect, useState } from "react";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 
-//create a functional react component
 const CreditOverview = () => {
   const router = useRouter();
-  const credits = [
-    { creditName: "Credit 1", id: 1 },
-    { creditName: "Credit 2", id: 2 },
-    { creditName: "Credit 3", id: 3 },
-  ];
+  const [credits, setCredits] = useState<{ creditName: string; id: number }[]>(
+    []
+  );
   const [tabIndex, setTabIndex] = useState(0);
   const [creditData, setCreditData] = useState<ICredit | null>(null);
+  const [isLoadingCredits, setIsLoadingCredits] = useState(true);
+  const [isLoadingCreditData, setIsLoadingCreditData] = useState(false);
+  const [creditsError, setCreditsError] = useState<string | null>(null);
+  const [creditDataError, setCreditDataError] = useState<string | null>(null);
 
   useEffect(() => {
-    //fetch the credit data
-    //replace with actual fetching logic
-    const creditData = {
-      creditName: "Credit 1",
-      iban: "DE123456789",
-      loanAmount: 100000,
-      annualRate: 8,
-      effectiveRate: 8.3,
-      term: 40,
-      otherFeesPA: 1000,
-      totalAmount: 123000,
-      nextPaymentDate: new Date(),
-      documents: ["Document 1", "Document 2"],
-      paymentRate: "monthly",
-      startDate: new Date("2021-01-01"),
+    const fetchCredits = async () => {
+      setIsLoadingCredits(true);
+      setCreditsError(null);
+      try {
+        const service = CreditService.getInstance();
+        const fetchedCredits = await service.fetchCredits();
+        setCredits(fetchedCredits);
+        if (fetchedCredits.length > 0) {
+          fetchCreditDetails(fetchedCredits[0].id);
+        }
+      } catch (err) {
+        setCreditsError("Error fetching credits.");
+      } finally {
+        setIsLoadingCredits(false);
+      }
     };
-    setCreditData(creditData);
+
+    fetchCredits();
   }, []);
+  const fetchCreditDetails = async (id: number) => {
+    setIsLoadingCreditData(true);
+    setCreditDataError(null);
+    try {
+      const service = CreditService.getInstance();
+      const fetchedCreditData = await service.fetchCreditDetails(id);
+      setCreditData(fetchedCreditData);
+    } catch (err) {
+      setCreditDataError("Error fetching credit details.");
+    } finally {
+      setIsLoadingCreditData(false);
+    }
+  };
 
   const handleTabsChange = (index: number) => {
     setTabIndex(index);
+    fetchCreditDetails(credits[index].id);
   };
+
+  if (isLoadingCredits) {
+    return (
+      <Box mt={8} ml={8}>
+        <Skeleton height="40px" width="200px" mb={4} />
+        <SkeletonText mt="4" noOfLines={4} spacing="4" />
+      </Box>
+    );
+  }
+
+  if (creditsError) {
+    return (
+      <Box mt={8} ml={8}>
+        <Alert status="error">
+          <AlertIcon />
+          {creditsError}
+        </Alert>
+      </Box>
+    );
+  }
+
+  if (credits.length === 0) {
+    return (
+      <Box mt={8} ml={8}>
+        <Heading as="h2" size={"lg"}>
+          Keine Kredite verfügbar
+        </Heading>
+      </Box>
+    );
+  }
 
   return (
     <Box mt={8} ml={8}>
@@ -87,7 +136,6 @@ const CreditOverview = () => {
                   <Button
                     colorScheme="blue"
                     onClick={() => {
-                      //navigate to update credit page
                       router.push(`/update-credit/${credits[tabIndex].id}`);
                     }}
                   >
@@ -119,8 +167,17 @@ const CreditOverview = () => {
                 <TabPanel key={credit.id}>
                   <Box display={"flex"} justifyContent={"space-between"}>
                     <Box flex={1}>
-                      {creditData && (
-                        <CreditDetails {...creditData}></CreditDetails>
+                      {isLoadingCreditData ? (
+                        <SkeletonText mt="4" noOfLines={6} spacing="4" />
+                      ) : creditDataError ? (
+                        <Alert status="error">
+                          <AlertIcon />
+                          {creditDataError}
+                        </Alert>
+                      ) : (
+                        creditData && (
+                          <CreditDetails {...creditData}></CreditDetails>
+                        )
                       )}
                     </Box>
                     <Box
@@ -129,11 +186,15 @@ const CreditOverview = () => {
                       boxShadow="md"
                       borderRadius="md"
                       bg="white"
-                      display={"flex"}
+                      display={creditDataError ? "none" : "flex"}
                       alignItems={"center"}
                     >
-                      {creditData && (
-                        <CreditChart {...creditData}></CreditChart>
+                      {isLoadingCreditData ? (
+                        <Skeleton height="200px" width="200px" />
+                      ) : (
+                        creditData && (
+                          <CreditChart {...creditData}></CreditChart>
+                        )
                       )}
                     </Box>
                   </Box>
