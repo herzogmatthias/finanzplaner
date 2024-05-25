@@ -1,25 +1,78 @@
 "use client";
-import { Box, Icon, SimpleGrid, Text } from "@chakra-ui/react";
-import { MdAccountBalance, MdAccountBalanceWallet } from "react-icons/md";
-
-const accounts = [
-  {
-    id: 1,
-    name: "Girokonto",
-    balance: "768.39€",
-    bank: "Bank #1",
-    icon: MdAccountBalanceWallet, // Wallet icon for a personal account
-  },
-  {
-    id: 2,
-    name: "Sparen",
-    balance: "768.39€",
-    bank: "Bank #2",
-    icon: MdAccountBalance, // Bank icon for savings account
-  },
-];
+import {
+  Box,
+  Icon,
+  SimpleGrid,
+  Skeleton,
+  Text,
+  Alert,
+  AlertIcon,
+} from "@chakra-ui/react";
+import { useEffect, useState } from "react";
+import AccountService, { Account } from "@/services/Account.service";
 
 const AccountOverview = () => {
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const service = AccountService.getInstance();
+        const data = await service.fetchAccounts();
+        setAccounts(data);
+      } catch (err) {
+        setError("Failed to fetch accounts.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAccounts();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <SimpleGrid columns={6} spacing={10}>
+        {Array(6)
+          .fill(0)
+          .map((_, index) => (
+            <Box
+              key={index}
+              p={4}
+              bg="white"
+              boxShadow="md"
+              borderRadius="md"
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Box>
+                <Skeleton height="20px" width="100px" mb={2} />
+                <Skeleton height="20px" width="80px" />
+                <Skeleton height="20px" width="60px" mt={2} />
+              </Box>
+              <Skeleton height="32px" width="32px" />
+            </Box>
+          ))}
+      </SimpleGrid>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box mt={4}>
+        <Alert status="error">
+          <AlertIcon />
+          {error}
+        </Alert>
+      </Box>
+    );
+  }
+
   return (
     <SimpleGrid columns={6} spacing={10}>
       {accounts.map((account) => (

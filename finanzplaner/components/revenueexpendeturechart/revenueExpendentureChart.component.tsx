@@ -9,7 +9,9 @@ import {
   Legend,
 } from "chart.js";
 import { useFilters } from "@/context/filter.context";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Box, Skeleton, Alert, AlertIcon } from "@chakra-ui/react";
+import AccountService, { RevenueExpenditure } from "@/services/Account.service";
 
 ChartJS.register(
   CategoryScale,
@@ -22,27 +24,88 @@ ChartJS.register(
 
 const RevenueExpenditureChart = () => {
   const { subscribe } = useFilters()!;
+  const [data, setData] = useState<RevenueExpenditure[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [firstRender, setFirstRender] = useState<boolean>(true);
+
   useEffect(() => {
+    const fetchData = async (filters: any) => {
+      setIsLoading(true);
+      setError(null);
+      setFirstRender(false);
+      try {
+        const service = AccountService.getInstance();
+        const result = await service.fetchRevenueExpenditure(filters);
+        setData(result);
+      } catch (err) {
+        setError("Failed to fetch revenue and expenditure data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     const unsubscribe = subscribe((filters) => {
       console.log("RevenueExpenditureChart fetching with filters:", filters);
-      // Fetch data based on filters
+      fetchData(filters);
     });
+
     return unsubscribe;
   }, []);
 
-  const data = {
-    labels: ["January", "February", "March", "April", "May", "June"], // Example months
+  if (isLoading) {
+    return (
+      <Box>
+        <Skeleton height="250px" />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box>
+        <Alert status="error">
+          <AlertIcon />
+          {error}
+        </Alert>
+      </Box>
+    );
+  }
+  if (data.length === 0 && firstRender) {
+    return (
+      <Box>
+        <Alert status="info">
+          <AlertIcon />
+          Please press 'start' to fetch data.
+        </Alert>
+      </Box>
+    );
+  }
+
+  if (data.length === 0 && !firstRender) {
+    return (
+      <Box>
+        <Alert status="warning">
+          <AlertIcon />
+          No data available.
+        </Alert>
+      </Box>
+    );
+  }
+
+  const chartData = {
+    labels: data.map((item) => item.date),
     datasets: [
       {
         label: "Revenue",
-        data: [200, 450, 300, 500, 400, 600], // Example data
+        data: data.map((item) => item.revenue),
         backgroundColor: "rgba(75, 192, 192, 0.5)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
       },
       {
         label: "Expenditure",
-        data: [500, 300, 400, 200, 450, 300], // Example data
+        data: data.map((item) => item.expense),
         backgroundColor: "rgba(255, 99, 132, 0.5)",
         borderColor: "rgba(255, 99, 132, 1)",
         borderWidth: 1,
@@ -72,7 +135,7 @@ const RevenueExpenditureChart = () => {
     maintainAspectRatio: false,
   };
 
-  return <Bar data={data} options={options} />;
+  return <Bar data={chartData} options={options} />;
 };
 
 export default RevenueExpenditureChart;

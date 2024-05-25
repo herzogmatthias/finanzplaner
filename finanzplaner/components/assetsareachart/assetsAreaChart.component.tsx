@@ -11,7 +11,9 @@ import {
   Filler,
 } from "chart.js";
 import { useFilters } from "@/context/filter.context";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Box, Skeleton, Alert, AlertIcon } from "@chakra-ui/react";
+import AccountService, { AccountData } from "@/services/Account.service";
 
 ChartJS.register(
   CategoryScale,
@@ -26,32 +28,82 @@ ChartJS.register(
 
 const AssetsAreaChart = () => {
   const { subscribe } = useFilters()!;
+  const [data, setData] = useState<AccountData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [firstRender, setFirstRender] = useState<boolean>(true);
+
   useEffect(() => {
+    const fetchData = async (filters: any) => {
+      setIsLoading(true);
+      setFirstRender(false);
+      setError(null);
+      try {
+        const service = AccountService.getInstance();
+        const result = await service.fetchAccountData(filters);
+        setData(result);
+      } catch (err) {
+        setError("Failed to fetch account data.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     const unsubscribe = subscribe((filters) => {
       console.log("AssetsAreaChart fetching with filters:", filters);
-      // Fetch data based on filters
+      fetchData(filters);
     });
+
     return unsubscribe;
   }, []);
 
-  const data = {
-    labels: ["January", "February", "March", "April", "May", "June"], // This should be dynamically generated based on the data
-    datasets: [
-      {
-        label: "Account #1",
-        data: [20000, 21000, 22000, 23000, 24000, 25000], // Example data
-        fill: true,
-        backgroundColor: "rgba(75,192,192,0.2)",
-        borderColor: "rgba(75,192,192,1)",
-      },
-      {
-        label: "Account #2",
-        data: [30000, 30500, 31000, 31500, 32000, 32500], // Example data
-        fill: true,
-        backgroundColor: "rgba(255,99,132,0.2)",
-        borderColor: "rgba(255,99,132,1)",
-      },
-    ],
+  if (isLoading) {
+    return (
+      <Box>
+        <Skeleton height="250px" />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box>
+        <Alert status="error">
+          <AlertIcon />
+          {error}
+        </Alert>
+      </Box>
+    );
+  }
+
+  if (data.length === 0 && firstRender) {
+    return (
+      <Box>
+        <Alert status="info">
+          <AlertIcon />
+          Please press 'start' to fetch data.
+        </Alert>
+      </Box>
+    );
+  }
+  if (data.length === 0 && !firstRender) {
+    return (
+      <Box>
+        <Alert status="warning">
+          <AlertIcon />
+          No data available.
+        </Alert>
+      </Box>
+    );
+  }
+
+  const chartData = {
+    labels: data[0].data.map((item) => item.date), // Assuming all accounts have the same dates
+    datasets: data.map((account) => ({
+      label: account.name,
+      data: account.data.map((item) => item.value),
+      fill: true,
+    })),
   };
 
   const options = {
@@ -69,7 +121,7 @@ const AssetsAreaChart = () => {
     elements: { line: { fill: "start" } },
   };
 
-  return <Line data={data} options={options} />;
+  return <Line data={chartData} options={options} />;
 };
 
 export default AssetsAreaChart;
