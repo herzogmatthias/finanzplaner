@@ -256,10 +256,10 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
           </FormControl>
         </VStack>
         <Box mt={8} display={"flex"} justifyContent={"end"}>
-          <Button colorScheme="teal" type="submit">
-            {isChanged ? "Update Credit" : "Add Credit"}
+          <Button colorScheme="blue" type="submit">
+            {isChanged ? "Kredit Ändern" : "Kredit hinzufügen"}
           </Button>
-          <Button ml={4} mr={2} colorScheme="red" type="reset">
+          <Button ml={4} mr={2} variant={"outline"} type="reset">
             Reset
           </Button>
         </Box>
