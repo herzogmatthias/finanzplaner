@@ -5,21 +5,23 @@ import AccountList from "@/components/accountList/accountList.component";  // En
 const AddCreditPage = () => {
     return (
       <Box mt={8} ml={8}>
-        <Heading>
-          Hello User!
-        </Heading>
-        <Text fontSize="md" mt={4}>
-          Here you can find and adjust your personal data.
-        </Text>
-        <Flex direction={{ base: "column", md: "row" }} mt={4} gap="20px">
-          <Box flex="1" p={5} bg="white" boxShadow="md" borderRadius="md">
+      <Heading>
+        Hello User!
+      </Heading>
+      <Text fontSize="md">
+        Here you can find and adjust your personal data.
+      </Text>
+      <Box >
+        <Flex mt={0} direction={{ base: "column", md: "row" }} gap="20px" alignItems="flex-start">
+          <Box flex={{ base: "1", md: "0 0 50%" }} p={5} bg="white" >
             <CreditForm />
           </Box>
-          <Box flex="1" p={5} bg="white" boxShadow="md" borderRadius="md">
+          <Box flex={{ base: "1", md: "1" }} p={5} bg="white" >
             <AccountList />
           </Box>
         </Flex>
-      </Box> 
+      </Box>
+    </Box>
     );
 };
 

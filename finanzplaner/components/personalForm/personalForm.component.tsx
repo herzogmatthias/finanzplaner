@@ -49,7 +49,7 @@ const PersonalForm = () => {
   };
 
   return (
-    <Box p={5} boxShadow={"md"} mx={20} mt={4}>
+    <Box p={5} boxShadow={"md"}  mt={4}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} mx={20}>
           <FormControl isInvalid={!!errors.email}>
