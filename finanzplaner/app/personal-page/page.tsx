@@ -12,7 +12,7 @@ const AddCreditPage = () => {
         Here you can find and adjust your personal data.
       </Text>
       <Box >
-        <Flex mt={0} direction={{ base: "column", md: "row" }} gap="20px" alignItems="flex-start">
+        <Flex mt={0} direction={{ base:"column", md: "row" }} gap="20px" alignItems="flex-start">
           <Box flex={{ base: "1", md: "0 0 50%" }} p={5} bg="white" >
             <CreditForm />
           </Box>
