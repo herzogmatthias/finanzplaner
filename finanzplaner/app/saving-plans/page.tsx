@@ -81,24 +81,24 @@ const PlanDetails = ({ plan, textColor, iconColor }: IPlanDetailsProps) => (
     <Flex alignItems="center" mb={1}>
       <Icon as={MdOutlineTrendingUp} w={5} h={5} color={iconColor} />
       <Text fontSize="lg" ml={2} color={textColor}>
-        To: {plan.issuer}
+        An: {plan.issuer}
       </Text>
     </Flex>
     <Flex alignItems="center" mb={1}>
       <Icon as={MdDateRange} w={5} h={5} color={iconColor} />
       <Text fontSize="lg" ml={2} color={textColor}>
-        Next: {new Date(plan.nextPayment).toLocaleDateString()}
+        Nächster Termin: {new Date(plan.nextPayment).toLocaleDateString()}
       </Text>
     </Flex>
     <Flex alignItems="center" mb={1}>
       <Icon as={MdPayment} w={5} h={5} color={iconColor} />
       <Text fontSize="lg" ml={2} color={textColor}>
-        Amount: {plan.paymentAmount} {plan.paymentCurrency}
+        Betrag: {plan.paymentAmount} {plan.paymentCurrency}
       </Text>
     </Flex>
     <Divider my={3} />
     <Text fontSize="lg" color={textColor}>
-      Until: {new Date(plan.finalPaymentDateTime).toLocaleDateString()}
+      Ende: {new Date(plan.finalPaymentDateTime).toLocaleDateString()}
     </Text>
   </Box>
 );
@@ -115,7 +115,7 @@ function GroupedSavingsPlans() {
         const fetchedPlans = await service.fetchStandingOrders();
         setPlans(fetchedPlans);
       } catch (err) {
-        setError("Error fetching standing orders.");
+        setError("Fehler beim Laden der Sparpläne.");
       } finally {
         setIsLoading(false);
       }
@@ -193,24 +193,32 @@ function GroupedSavingsPlans() {
           <Heading as="h2" size="lg">
             Geldfluss
           </Heading>
-          <HighchartsReact highcharts={Highcharts} options={options} />
+          {plans.length > 0 ? (
+            <HighchartsReact highcharts={Highcharts} options={options} />
+          ) : (
+            <Text>Keine Sparpläne vorhanden.</Text>
+          )}
         </Box>
       </Skeleton>
       <SimpleGrid ml={8} mr={12} columns={{ sm: 1, md: 2, lg: 3 }} spacing={10}>
-        {isLoading
-          ? Array.from({ length: 3 }).map((_, idx) => (
-              <Skeleton key={idx} height="300px" />
-            ))
-          : Object.entries(groupedPlans).map(([accountName, plans]) => (
-              <PlanCard
-                key={accountName}
-                accountName={accountName}
-                plans={plans}
-                cardBg={cardBg}
-                textColor={textColor}
-                iconColor={iconColor}
-              />
-            ))}
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, idx) => (
+            <Skeleton key={idx} height="300px" />
+          ))
+        ) : plans.length > 0 ? (
+          Object.entries(groupedPlans).map(([accountName, plans]) => (
+            <PlanCard
+              key={accountName}
+              accountName={accountName}
+              plans={plans}
+              cardBg={cardBg}
+              textColor={textColor}
+              iconColor={iconColor}
+            />
+          ))
+        ) : (
+          <Text mt={4}>Keine Sparpläne vorhanden.</Text>
+        )}
       </SimpleGrid>
     </Box>
   );

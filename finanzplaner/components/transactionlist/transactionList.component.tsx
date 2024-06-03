@@ -37,7 +37,9 @@ const TransactionList = () => {
       setTransactions(result);
     } catch (err) {
       console.log(err);
-      setError("Failed to fetch transactions.");
+      setError(
+        "Fehler beim Laden der Transaktionen. Bitte versuche es erneut."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +93,7 @@ const TransactionList = () => {
       <Box>
         <Alert status="info">
           <AlertIcon />
-          Please press 'start' to fetch data.
+          Bitte drücke 'Start' um die Transaktionen zu laden.
         </Alert>
       </Box>
     );
@@ -102,7 +104,7 @@ const TransactionList = () => {
       <Box w="full" p={5}>
         <Alert status="warning">
           <AlertIcon />
-          No transactions available.
+          Keine Transaktionen gefunden.
         </Alert>
       </Box>
     );
@@ -126,13 +128,13 @@ const TransactionList = () => {
                 />
                 <VStack align="start" flex="1">
                   <Text fontWeight="bold">
-                    Account ID (Transaction ID): {item.accountId} (
+                    Konto ID (Transaktion ID): {item.accountId} (
                     {item.transactionId})
                   </Text>
                   <Text>Details: {item.transactionInformation}</Text>
                   <Flex align="center">
                     <Text fontSize="sm" mr={2}>
-                      Amount:
+                      Betrag:
                     </Text>
                     <Tag
                       size="lg"
@@ -147,7 +149,7 @@ const TransactionList = () => {
                   <Tag colorScheme={item.amount >= 0 ? "green" : "red"}>
                     {item.amount >= 0 ? "Revenue" : "Expenditure"}
                   </Tag>
-                  <Text fontSize="sm">Receiver: {item.merchantName}</Text>
+                  <Text fontSize="sm">Empfänger: {item.merchantName}</Text>
                   <Text fontSize="sm">Sender: {item.transactionIssuer}</Text>
                 </VStack>
               </Flex>

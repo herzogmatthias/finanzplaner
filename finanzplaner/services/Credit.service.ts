@@ -71,10 +71,12 @@ class CreditService {
         },
       })
         .then((response) =>
-          resolve(response.ok ? "Credit deleted." : "Error deleting credit.")
+          resolve(
+            response.ok ? "Kredit gelöscht" : "Fehler beim löschen des Kredits"
+          )
         )
         .catch((error) => {
-          reject("Error deleting credit.");
+          reject("Fehler beim löschen des Kredits");
         });
     });
   }

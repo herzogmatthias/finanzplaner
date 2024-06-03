@@ -56,7 +56,7 @@ const CreditOverview = () => {
         fetchCreditDetails(fetchedCredits[0].loanId);
       }
     } catch (err) {
-      setCreditsError("Error fetching credits.");
+      setCreditsError("Fehler beim laden der Kredite");
     } finally {
       setIsLoadingCredits(false);
     }
@@ -70,7 +70,7 @@ const CreditOverview = () => {
       console.log(fetchedCreditData);
       setCreditData(fetchedCreditData);
     } catch (err) {
-      setCreditDataError("Error fetching credit details.");
+      setCreditDataError("Fehler beim laden der Details");
     } finally {
       setIsLoadingCreditData(false);
     }
@@ -91,7 +91,7 @@ const CreditOverview = () => {
       });
     } catch (err) {
       toast({
-        title: "Error deleting credit",
+        title: "Fehler beim Löschen des Kredits",
         description: err as string,
         status: "error",
         duration: 5000,

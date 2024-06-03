@@ -43,7 +43,7 @@ const AssetsAreaChart = () => {
         const result = await service.fetchAccountData(filters);
         setData(result);
       } catch (err) {
-        setError("Failed to fetch account data.");
+        setError("Fehler beim Laden der Daten");
       } finally {
         setIsLoading(false);
       }
@@ -81,7 +81,7 @@ const AssetsAreaChart = () => {
       <Box>
         <Alert status="info">
           <AlertIcon />
-          Please press 'start' to fetch data.
+          Bitte drücke 'Start' um Daten zu laden.
         </Alert>
       </Box>
     );
@@ -91,7 +91,7 @@ const AssetsAreaChart = () => {
       <Box>
         <Alert status="warning">
           <AlertIcon />
-          No data available.
+          Keine Daten verfügbar.
         </Alert>
       </Box>
     );

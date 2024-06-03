@@ -32,7 +32,7 @@ const AccountList = () => {
       const fetchedAccounts = await service.fetchBankAccounts();
       setAccounts(fetchedAccounts);
     } catch (err) {
-      setError("Failed to load accounts.");
+      setError("Fehler beim Laden der Konten");
     } finally {
       setIsLoading(false);
     }
@@ -49,16 +49,16 @@ const AccountList = () => {
       await service.deleteOneBankAccount(id, accountId);
       await fetchAccounts();
       toast({
-        title: "Account deleted.",
-        description: "The account has been removed successfully.",
+        title: "Konto gelöscht",
+        description: "Das Konto wurde erfolgreich gelöscht.",
         status: "info",
         duration: 3000,
         isClosable: true,
       });
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to delete the account.",
+        title: "Fehler",
+        description: "Fehler beim Löschen des Kontos.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -74,16 +74,16 @@ const AccountList = () => {
       await service.deleteAllBankAccounts();
       await fetchAccounts();
       toast({
-        title: "All accounts deleted.",
-        description: "All linked accounts have been removed.",
+        title: "Alle Konten gelöscht.",
+        description: "Alle verknüpften Konten wurden erfolgreich gelöscht.",
         status: "info",
         duration: 3000,
         isClosable: true,
       });
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to delete all accounts.",
+        title: "Fehler",
+        description: "Fehler beim Löschen der Konten.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -112,7 +112,7 @@ const AccountList = () => {
   return (
     <Box bg="white" p={5} boxShadow="md" borderRadius="md">
       <Heading size="md" mb={4}>
-        Your Accounts
+        Deine Konten
       </Heading>
       <List spacing={3}>
         {accounts.map((account) => (
@@ -133,7 +133,7 @@ const AccountList = () => {
       </List>
       {accounts.length > 0 && (
         <Button mt={4} colorScheme="red" onClick={deleteAllAccounts}>
-          Delete All Accounts
+          Löschen aller Konten
         </Button>
       )}
     </Box>

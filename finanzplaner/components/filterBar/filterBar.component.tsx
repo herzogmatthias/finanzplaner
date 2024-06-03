@@ -19,7 +19,7 @@ const FilterBar = () => {
     >
       <HStack spacing={3} flex={1} mr={4}>
         <Input
-          placeholder="Search Text"
+          placeholder="Suche"
           value={filters.freeText}
           onChange={(e) => handleFilterChange("freeText", e.target.value)}
           size={"sm"}
@@ -38,7 +38,7 @@ const FilterBar = () => {
           ]}
           size="sm"
           id="asdfasdf"
-          placeholder="Accounts"
+          placeholder="Konten"
           value={filters.account}
           onChange={(e) => {
             console.log(e);

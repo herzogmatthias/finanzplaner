@@ -92,10 +92,10 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
     try {
       const creditService = CreditService.getInstance();
       if (isChanged && id) {
-        await creditService.updateCredit(id, data);
+        await creditService.updateCredit(id as any, data);
         toast({
-          title: "Credit updated.",
-          description: "The credit details have been successfully updated.",
+          title: "Kreditdetails aktualisiert.",
+          description: "Die Kreditdetails wurden erfolgreich aktualisiert.",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -103,8 +103,8 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
       } else {
         await creditService.addCredit(data);
         toast({
-          title: "Credit added.",
-          description: "The credit has been successfully added.",
+          title: "Kredit hinzugefügt.",
+          description: "Der Kredit wurde erfolgreich hinzugefügt.",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -112,9 +112,9 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
       }
     } catch (error) {
       toast({
-        title: "An error occurred.",
+        title: "Fehler",
         description:
-          "Unable to save the credit details. Please try again later.",
+          "Kredit konnte nicht hinzugefügt oder geändert werden. Bitte versuchen Sie es erneut.",
         status: "error",
         duration: 3000,
         isClosable: true,

@@ -61,7 +61,7 @@ const InsuranceOverview = () => {
         fetchInsuranceDetails(fetchedInsurances[0].insuranceId);
       }
     } catch (err) {
-      setInsurancesError("Error fetching insurances.");
+      setInsurancesError("Fehler beim laden der Versicherungen");
     } finally {
       setIsLoadingInsurances(false);
     }
@@ -75,7 +75,7 @@ const InsuranceOverview = () => {
       const fetchedInsuranceData = await service.fetchInsuranceDetails(id);
       setInsuranceData(fetchedInsuranceData);
     } catch (err) {
-      setInsuranceDataError("Error fetching insurance details.");
+      setInsuranceDataError("Fehler beim laden der Details");
     } finally {
       setIsLoadingInsuranceData(false);
     }
@@ -95,14 +95,14 @@ const InsuranceOverview = () => {
       fetchInsurances();
       console.log(msg);
       toast({
-        title: "Insurance deleted successfully.",
+        title: "Versicherung erfolgreich gelöscht.",
         status: "success",
         duration: 5000,
         isClosable: true,
       });
     } catch (err) {
       toast({
-        title: "Error deleting insurance.",
+        title: "Fehler beim Löschen der Versicherung.",
         status: "error",
         duration: 5000,
         isClosable: true,

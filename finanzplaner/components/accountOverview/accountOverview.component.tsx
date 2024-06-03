@@ -25,7 +25,7 @@ const AccountOverview = () => {
         const data = await service.fetchAccounts();
         setAccounts(data);
       } catch (err) {
-        setError("Failed to fetch accounts.");
+        setError("Fehler beim Laden der Konten");
       } finally {
         setIsLoading(false);
       }

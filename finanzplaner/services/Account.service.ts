@@ -96,7 +96,7 @@ class AccountService {
         })
         .catch((error) => {
           console.log(error);
-          reject("Error fetching transactions.");
+          reject("Fehler beim Laden der Transaktionen.");
         });
     });
   }
@@ -165,7 +165,7 @@ class AccountService {
           resolve(data);
         })
         .catch((error) => {
-          reject("Error fetching transactions.");
+          reject("Fehler beim Laden der Transaktionen.");
         });
     });
   }

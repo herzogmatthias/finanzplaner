@@ -37,7 +37,7 @@ export default function Home() {
             size="lg"
             width="200px"
           >
-            Sign Up
+            Registrieren
           </Button>
           <Text>oder</Text>
           <Button

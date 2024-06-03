@@ -22,13 +22,51 @@ ChartJS.register(
   Title
 );
 
-const CreditChart = ({ loanAmount, totalAmount }: ICreditChart) => {
+const CreditChart = ({
+  loanAmount,
+  endDate,
+  startDate,
+  interestRate,
+  additionalCosts,
+}: ICreditChart) => {
+  const term =
+    new Date(endDate).getFullYear() - new Date(startDate).getFullYear();
+
+  const calculateMonthlyPayment = (
+    loanAmount: number,
+    interestRate: number,
+    term: number,
+    additionalCosts: number
+  ) => {
+    const monthlyRate = interestRate / 12 / 100; // convert annual rate to a monthly and percentage
+    const totalPayments = term * 12; // total number of monthly payments
+
+    // Monthly payment calculation using the formula for an annuity
+    const monthlyPayment =
+      (monthlyRate * loanAmount) /
+      (1 - Math.pow(1 + monthlyRate, -totalPayments));
+
+    // Adding other annual fees spread out over the monthly payments
+    const monthlyFees = additionalCosts / 12;
+
+    return monthlyPayment + monthlyFees;
+  };
+  const calculateTotalAmountToBePaidBack = () => {
+    const monthlyPayment = calculateMonthlyPayment(
+      loanAmount,
+      interestRate,
+      term,
+      additionalCosts
+    );
+    return monthlyPayment * term * 12; // Total amount paid over the loan term
+  };
+
   const data = {
     labels: ["Kreditbetrag", "Zinsbetrag"],
     datasets: [
       {
-        label: "Credit Details",
-        data: [loanAmount, totalAmount - loanAmount],
+        label: "Kredit Details",
+        data: [loanAmount, calculateTotalAmountToBePaidBack() - loanAmount],
         backgroundColor: ["rgba(54, 162, 235, 1)", "rgba(75, 192, 192, 1)"],
         borderColor: ["rgba(54, 162, 235, 1)", "rgba(75, 192, 192, 1)"],
         borderWidth: 1,
@@ -134,7 +172,7 @@ const CreditChart = ({ loanAmount, totalAmount }: ICreditChart) => {
                 new Intl.NumberFormat("de-DE", {
                   style: "currency",
                   currency: "EUR",
-                }).format(totalAmount),
+                }).format(calculateTotalAmountToBePaidBack()),
               color: "#000000", // Default is #000000
               sidePadding: 20, // Default is 20 (as a percentage)
               minFontSize: 10, // Default is 20 (in px), set to false and text will not wrap.

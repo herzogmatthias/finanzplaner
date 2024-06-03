@@ -27,6 +27,12 @@ const InsuranceDetails = ({
   insuranceType,
   files,
 }: IInsurance) => {
+  const frequencyMap: { [key: string]: string } = {
+    Monthly: "Monatlich",
+    Yearly: "Jährlich",
+    Quarterly: "Quartalsweise",
+  };
+  const translatedFrequency = frequencyMap[frequency] || frequency;
   return (
     <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p={4}>
       <Text fontSize="xl" fontWeight="bold" mb={4}>
@@ -56,7 +62,7 @@ const InsuranceDetails = ({
           </Tr>
           <Tr>
             <Td>Zahlungsrate</Td>
-            <Td>{frequency}</Td>
+            <Td>{translatedFrequency}</Td>
           </Tr>
           <Tr>
             <Td>Pausiert</Td>
@@ -84,7 +90,7 @@ const InsuranceDetails = ({
       </Table>
       <Flex justify="space-between" align="center" mt={4}>
         <Text fontSize="xl" fontWeight="bold">
-          Monatliche Kosten
+          Kosten
         </Text>
         <Text fontSize="2xl" fontWeight="bold" color="blue.600">
           € {paymentAmount.toFixed(2)}

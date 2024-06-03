@@ -62,7 +62,7 @@ const Navbar = () => {
         duration: 5000,
         isClosable: true,
       });
-      router.reload();
+      router.refresh();
     } catch (error) {
       toast({
         title: "Fehler",
@@ -80,6 +80,16 @@ const Navbar = () => {
 
   const bgColor = useColorModeValue("blue.500", "blue.200");
 
+  const urls = [
+    "/accounts",
+    "/saving-plans",
+    "/credit-overview",
+    "/insurance-overview",
+    "/credit-simulator",
+  ];
+
+  const shouldShowMenuIcon = isLoggedIn && urls.includes(pathname);
+
   return (
     <Flex
       align="center"
@@ -89,16 +99,17 @@ const Navbar = () => {
       bg={bgColor}
     >
       <Box display={"flex"} alignItems={"center"}>
-        <IconButton
-          aria-label="Open Menu"
-          icon={<Icon size={"lg"} as={app?.isNavOpen ? MdClose : MdMenu} />}
-          onClick={() => app?.toggleNav()}
-          variant="solid"
-          color={"white"}
-          colorScheme="blue"
-          marginRight={4}
-          display={{ base: isLoggedIn && pathname !== "/" ? "flex" : "none" }}
-        />
+        {shouldShowMenuIcon && (
+          <IconButton
+            aria-label="Open Menu"
+            icon={<Icon size={"lg"} as={app?.isNavOpen ? MdClose : MdMenu} />}
+            onClick={() => app?.toggleNav()}
+            variant="solid"
+            color={"white"}
+            colorScheme="blue"
+            marginRight={4}
+          />
+        )}
         <Box
           color="white"
           fontWeight="bold"
@@ -159,7 +170,7 @@ const Navbar = () => {
             />
             <MenuList>
               <MenuItem onClick={() => router.push("/personal-page")}>
-                Personal Page
+                Persönliche Seite
               </MenuItem>
               <MenuItem color={"red.400"} onClick={handleLogout}>
                 Logout
@@ -215,7 +226,7 @@ const Navbar = () => {
             colorScheme="blue"
             onClick={() => router.push("/sign-up")}
           >
-            Sign Up
+            Registrieren
           </Button>
         </Flex>
       )}

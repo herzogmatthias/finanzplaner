@@ -28,12 +28,12 @@ export class UserService {
         localStorage.setItem("jwt", body.token);
         localStorage.setItem("currency", body.claims.CurrencyPreference);
         localStorage.setItem("UserId", body.claims.UserId);
-        return { error: false, msg: "Login Successful" };
+        return { error: false, msg: "Login erfolgreich" };
       } else {
         return { error: true, msg: body.title };
       }
     } catch (error) {
-      return { error: true, msg: "Login failed" };
+      return { error: true, msg: "Login fehlgeschlagen" };
     }
   }
 

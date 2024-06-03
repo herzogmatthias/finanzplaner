@@ -9,8 +9,6 @@ import {
   VStack,
   Tooltip,
 } from "@chakra-ui/react";
-import { ICreditDetails } from "./ICreditDetails.props";
-import { IDetailItem } from "./IDetailItem.props";
 import { ICredit } from "@/models/ICredit";
 
 const CreditDetails = ({
@@ -26,23 +24,17 @@ const CreditDetails = ({
 }: ICredit) => {
   const term =
     new Date(endDate).getFullYear() - new Date(startDate).getFullYear();
+
   const calculateMonthlyPayment = (
     loanAmount: number,
     interestRate: number,
     term: number,
     otherFeesPA: number
   ) => {
-    console.log(interestRate, term, otherFeesPA, loanAmount);
     const monthlyRate = interestRate / 12 / 100; // convert annual rate to a monthly and percentage
     const totalPayments = term * 12; // total number of monthly payments
 
     // Monthly payment calculation using the formula for an annuity
-    // P = [r*PV] / [1 - (1 + r)^(-n)]
-    // Where:
-    // P = payment
-    // r = monthly interest rate
-    // PV = present value (loanAmount)
-    // n = total number of payments
     const monthlyPayment =
       (monthlyRate * loanAmount) /
       (1 - Math.pow(1 + monthlyRate, -totalPayments));
@@ -52,19 +44,18 @@ const CreditDetails = ({
 
     return monthlyPayment + monthlyFees;
   };
+
   const calculateAmountPaidBack = (
     monthlyPayment: number,
     startDate: Date,
     currentDate: Date
   ) => {
-    // Calculate the number of full months between the start date and the current date
     const start = new Date(startDate);
     const now = currentDate;
     let months = (now.getFullYear() - start.getFullYear()) * 12;
     months -= start.getMonth();
     months += now.getMonth();
 
-    // Ensure that we do not count partial months if the current date is before the payment date
     if (now.getDate() < start.getDate()) {
       months--;
     }
@@ -72,7 +63,21 @@ const CreditDetails = ({
     return monthlyPayment * months; // Total amount paid back so far
   };
 
-  //calculate years passed
+  const calculateTotalAmountToBePaidBack = (
+    loanAmount: number,
+    interestRate: number,
+    term: number,
+    otherFeesPA: number
+  ) => {
+    const monthlyPayment = calculateMonthlyPayment(
+      loanAmount,
+      interestRate,
+      term,
+      otherFeesPA
+    );
+    return monthlyPayment * term * 12; // Total amount paid over the loan term
+  };
+
   const currentDate = new Date();
   const yearsPassed =
     currentDate.getFullYear() - new Date(startDate).getFullYear();
@@ -88,7 +93,14 @@ const CreditDetails = ({
     new Date() // assuming the current date is the date of calculation
   );
 
-  const paidPercentage = (amountPaidBack / totalAmount) * 100;
+  const totalAmountToBePaidBack = calculateTotalAmountToBePaidBack(
+    loanAmount,
+    interestRate,
+    term,
+    additionalCosts
+  );
+
+  const paidPercentage = (amountPaidBack / totalAmountToBePaidBack) * 100;
   const yearsPassedPercentage = (yearsPassed / term) * 100;
 
   const formatCurrency = (amount: number) =>
@@ -128,7 +140,7 @@ const CreditDetails = ({
         />
         <DetailItem
           label="Gesamtbetrag"
-          value={formatCurrency(totalAmount)}
+          value={formatCurrency(totalAmountToBePaidBack)}
           progress={paidPercentage}
           tooltipLabel={formatCurrency(amountPaidBack)}
         />
@@ -143,13 +155,7 @@ const CreditDetails = ({
         />
         <DetailItem
           label="Nächster Zahlungstermin"
-          value={new Date(nextPaymentDate).toLocaleDateString("de-DE")}
-          progress={0}
-          tooltipLabel={""}
-        />
-        <DetailItem
-          label="Effektiver Zinssatz"
-          value={formatPercentage(effectiveRate || interestRate)}
+          value={/*new Date(nextPaymentDate).toLocaleDateString("de-DE")*/ ""}
           progress={0}
           tooltipLabel={""}
         />
@@ -158,7 +164,19 @@ const CreditDetails = ({
   );
 };
 
-const DetailItem = ({ label, value, progress, tooltipLabel }: IDetailItem) => (
+interface IDetailItemProps {
+  label: string;
+  value: string;
+  progress: number;
+  tooltipLabel: string;
+}
+
+const DetailItem = ({
+  label,
+  value,
+  progress,
+  tooltipLabel,
+}: IDetailItemProps) => (
   <Box>
     <Flex justify="space-between" align="center" mb={2}>
       <Text fontWeight="semibold">{label}</Text>

@@ -31,20 +31,20 @@ const SignUp = () => {
     const newErrors: any = {};
 
     if (!username) {
-      newErrors.username = "Username is required";
+      newErrors.username = "Username ist erforderlich";
     }
     if (!email) {
-      newErrors.email = "Email is required";
+      newErrors.email = "Email ist erforderlich";
     } else if (!validateEmail(email)) {
-      newErrors.email = "Invalid email address";
+      newErrors.email = "Invalide Email";
     }
     if (!password) {
-      newErrors.password = "Password is required";
+      newErrors.password = "Passwort ist erforderlich";
     }
     if (!confirmPassword) {
-      newErrors.confirmPassword = "Confirm Password is required";
+      newErrors.confirmPassword = "Passwort wiederholen ist erforderlich";
     } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "Passwörter stimmen nicht überein";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -56,7 +56,7 @@ const SignUp = () => {
       console.log("Sign Up:", { username, email, password, confirmPassword });
       if (error !== "") {
         toast({
-          title: "Registration failed",
+          title: "Registrierung fehlgeschlagen",
           description: error,
           status: "error",
           duration: 9000,
@@ -65,8 +65,8 @@ const SignUp = () => {
         });
       } else {
         toast({
-          title: "Registration successful",
-          description: "You have successfully registered",
+          title: "Registrierung erfolgreich",
+          description: "Du kannst dich jetzt einloggen",
           status: "success",
           duration: 9000,
           isClosable: true,
@@ -126,7 +126,7 @@ const SignUp = () => {
                 isRequired
                 isInvalid={!!errors.password}
               >
-                <FormLabel>Password</FormLabel>
+                <FormLabel>Passwort</FormLabel>
                 <Input
                   type="password"
                   value={password}
