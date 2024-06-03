@@ -34,12 +34,6 @@ const CostHistoryChart = () => {
       const datasets = insurances.map((insurance) => ({
         label: insurance,
         data: months.map((month) => groupedData[month][insurance] || 0),
-        backgroundColor: `rgba(${Math.floor(Math.random() * 255)},${Math.floor(
-          Math.random() * 255
-        )},${Math.floor(Math.random() * 255)},0.6)`,
-        borderColor: `rgba(${Math.floor(Math.random() * 255)},${Math.floor(
-          Math.random() * 255
-        )},${Math.floor(Math.random() * 255)},1)`,
         borderWidth: 1,
       }));
 

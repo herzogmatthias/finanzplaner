@@ -1,7 +1,7 @@
 // interfaces/TransactionData.ts
 export interface ITransaction {
-  transactionID: string;
-  accountID: string;
+  transactionId: string;
+  accountId: string;
   amount: number;
   bookingDateTime: string;
   transactionInformation: string;

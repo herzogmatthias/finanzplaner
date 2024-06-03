@@ -11,24 +11,29 @@ import {
 } from "@chakra-ui/react";
 import { ICreditDetails } from "./ICreditDetails.props";
 import { IDetailItem } from "./IDetailItem.props";
+import { ICredit } from "@/models/ICredit";
 
 const CreditDetails = ({
-  annualRate,
+  interestRate,
   loanAmount,
   nextPaymentDate,
-  otherFeesPA,
+  additionalCosts,
   startDate,
-  term,
+  endDate,
   totalAmount,
   effectiveRate,
-}: ICreditDetails) => {
+  loanUnitCurrency,
+}: ICredit) => {
+  const term =
+    new Date(endDate).getFullYear() - new Date(startDate).getFullYear();
   const calculateMonthlyPayment = (
     loanAmount: number,
-    annualRate: number,
+    interestRate: number,
     term: number,
     otherFeesPA: number
   ) => {
-    const monthlyRate = annualRate / 12 / 100; // convert annual rate to a monthly and percentage
+    console.log(interestRate, term, otherFeesPA, loanAmount);
+    const monthlyRate = interestRate / 12 / 100; // convert annual rate to a monthly and percentage
     const totalPayments = term * 12; // total number of monthly payments
 
     // Monthly payment calculation using the formula for an annuity
@@ -53,7 +58,7 @@ const CreditDetails = ({
     currentDate: Date
   ) => {
     // Calculate the number of full months between the start date and the current date
-    const start = startDate;
+    const start = new Date(startDate);
     const now = currentDate;
     let months = (now.getFullYear() - start.getFullYear()) * 12;
     months -= start.getMonth();
@@ -69,12 +74,13 @@ const CreditDetails = ({
 
   //calculate years passed
   const currentDate = new Date();
-  const yearsPassed = currentDate.getFullYear() - startDate.getFullYear();
+  const yearsPassed =
+    currentDate.getFullYear() - new Date(startDate).getFullYear();
   const monthlyPayment = calculateMonthlyPayment(
     loanAmount,
-    annualRate,
+    interestRate,
     term,
-    otherFeesPA
+    additionalCosts
   );
   const amountPaidBack = calculateAmountPaidBack(
     monthlyPayment,
@@ -88,7 +94,7 @@ const CreditDetails = ({
   const formatCurrency = (amount: number) =>
     `${new Intl.NumberFormat("de-DE", {
       style: "currency",
-      currency: "EUR",
+      currency: loanUnitCurrency,
     }).format(amount)}`;
   const formatPercentage = (percentage: number) =>
     `${percentage.toLocaleString("de-DE", { maximumFractionDigits: 2 })} %`;
@@ -104,13 +110,13 @@ const CreditDetails = ({
         />
         <DetailItem
           label="Zinssatz"
-          value={formatPercentage(annualRate)}
+          value={formatPercentage(interestRate)}
           progress={0}
           tooltipLabel={""}
         />
         <DetailItem
           label="Andere Kosten pro Jahr"
-          value={formatCurrency(otherFeesPA)}
+          value={formatCurrency(additionalCosts)}
           progress={0}
           tooltipLabel={""}
         />
@@ -137,13 +143,13 @@ const CreditDetails = ({
         />
         <DetailItem
           label="Nächster Zahlungstermin"
-          value={nextPaymentDate.toLocaleDateString("de-DE")}
+          value={new Date(nextPaymentDate).toLocaleDateString("de-DE")}
           progress={0}
           tooltipLabel={""}
         />
         <DetailItem
           label="Effektiver Zinssatz"
-          value={formatPercentage(effectiveRate)}
+          value={formatPercentage(effectiveRate || interestRate)}
           progress={0}
           tooltipLabel={""}
         />

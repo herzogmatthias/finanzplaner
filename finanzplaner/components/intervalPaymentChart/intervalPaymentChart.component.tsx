@@ -18,7 +18,7 @@ const IntervalPaymentChart = () => {
           {
             data: [
               chartData.monthlyPayment,
-              chartData.quarterPayment,
+              chartData.quarterlyPayment,
               chartData.yearlyPayment,
             ],
             backgroundColor: ["#36A2EB", "#FFCE56", "#FF6384"],

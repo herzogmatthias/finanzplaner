@@ -20,6 +20,7 @@ import {
   TabPanels,
   Tabs,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { IInsurance } from "@/models/IInsurance";
@@ -31,8 +32,9 @@ import { useRouter } from "next/navigation";
 
 const InsuranceOverview = () => {
   const router = useRouter();
+  const toast = useToast();
   const [insurances, setInsurances] = useState<
-    { insuranceName: string; id: number }[]
+    { description: string; insuranceId: number }[]
   >([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [insuranceData, setInsuranceData] = useState<IInsurance | null>(null);
@@ -44,25 +46,26 @@ const InsuranceOverview = () => {
   );
 
   useEffect(() => {
-    const fetchInsurances = async () => {
-      setIsLoadingInsurances(true);
-      setInsurancesError(null);
-      try {
-        const service = InsuranceService.getInstance();
-        const fetchedInsurances = await service.fetchInsurances();
-        setInsurances(fetchedInsurances);
-        if (fetchedInsurances.length > 0) {
-          fetchInsuranceDetails(fetchedInsurances[0].id);
-        }
-      } catch (err) {
-        setInsurancesError("Error fetching insurances.");
-      } finally {
-        setIsLoadingInsurances(false);
-      }
-    };
-
     fetchInsurances();
   }, []);
+
+  const fetchInsurances = async () => {
+    setIsLoadingInsurances(true);
+    setInsurancesError(null);
+    setTabIndex(0);
+    try {
+      const service = InsuranceService.getInstance();
+      const fetchedInsurances = await service.fetchInsurances();
+      setInsurances(fetchedInsurances);
+      if (fetchedInsurances.length > 0) {
+        fetchInsuranceDetails(fetchedInsurances[0].insuranceId);
+      }
+    } catch (err) {
+      setInsurancesError("Error fetching insurances.");
+    } finally {
+      setIsLoadingInsurances(false);
+    }
+  };
 
   const fetchInsuranceDetails = async (id: number) => {
     setIsLoadingInsuranceData(true);
@@ -80,7 +83,31 @@ const InsuranceOverview = () => {
 
   const handleTabsChange = (index: number) => {
     setTabIndex(index);
-    fetchInsuranceDetails(insurances[index].id);
+    fetchInsuranceDetails(insurances[index].insuranceId);
+  };
+
+  const deleteInsurance = async () => {
+    try {
+      const service = InsuranceService.getInstance();
+      const msg = await service.deleteInsurance(
+        insurances[tabIndex].insuranceId
+      );
+      fetchInsurances();
+      console.log(msg);
+      toast({
+        title: "Insurance deleted successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (err) {
+      toast({
+        title: "Error deleting insurance.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   if (isLoadingInsurances) {
@@ -132,7 +159,9 @@ const InsuranceOverview = () => {
                 <TabList width={"80%"}>
                   {insurances.map((insurance) => {
                     return (
-                      <Tab key={insurance.id}>{insurance.insuranceName}</Tab>
+                      <Tab key={insurance.insuranceId}>
+                        {insurance.description}
+                      </Tab>
                     );
                   })}
                 </TabList>
@@ -143,13 +172,15 @@ const InsuranceOverview = () => {
                     colorScheme="blue"
                     onClick={() => {
                       router.push(
-                        `/update-insurance/${insurances[tabIndex].id}`
+                        `/update-insurance/${insurances[tabIndex].insuranceId}`
                       );
                     }}
                   >
                     Ändern
                   </Button>
-                  <Button colorScheme="blue">Löschen</Button>
+                  <Button onClick={deleteInsurance} colorScheme="blue">
+                    Löschen
+                  </Button>
                   <Menu>
                     <MenuButton
                       colorScheme="blue"
@@ -158,12 +189,13 @@ const InsuranceOverview = () => {
                         <Icon size={"lg"} as={MdOutlineKeyboardArrowDown} />
                       }
                     >
-                      Dokumente ({insuranceData?.files.length || 0})
+                      Dokumente ({insuranceData?.files?.length || 0})
                     </MenuButton>
                     <MenuList>
-                      {insuranceData?.files.map((document, index) => (
-                        <MenuItem key={index}>{document}</MenuItem>
-                      ))}
+                      {!insuranceData?.files ??
+                        insuranceData?.files.map((document, index) => (
+                          <MenuItem key={index}>{document}</MenuItem>
+                        ))}
                     </MenuList>
                   </Menu>
                 </ButtonGroup>
@@ -172,7 +204,7 @@ const InsuranceOverview = () => {
 
             <TabPanels>
               {insurances.map((insurance) => (
-                <TabPanel key={insurance.id}>
+                <TabPanel key={insurance.description}>
                   <Box display={"flex"} justifyContent={"space-between"}>
                     <Box flex={1}>
                       {isLoadingInsuranceData ? (

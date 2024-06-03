@@ -45,7 +45,6 @@ const CreditChart = ({ loanAmount, totalAmount }: ICreditChart) => {
 
           // Get options from the center object in options
           var centerConfig = chart.config.options.elements.center;
-          console.log(centerConfig);
           var fontStyle = centerConfig.fontStyle || "Arial";
           var txt = centerConfig.text;
           var color = centerConfig.color || "#000";
@@ -102,8 +101,6 @@ const CreditChart = ({ loanAmount, totalAmount }: ICreditChart) => {
             lines.push(line);
             line = words[n] + " ";
           }
-          console.log(words);
-          console.log(lines);
           // Move the center up depending on line height and number of lines
           centerY -= (lines.length / 2) * lineHeight;
 

@@ -12,6 +12,9 @@ import {
   RadioGroup,
   IconButton,
   SimpleGrid,
+  FormErrorMessage,
+  InputGroup,
+  InputRightAddon,
 } from "@chakra-ui/react";
 import { MdAdd, MdRemove } from "react-icons/md";
 
@@ -21,14 +24,20 @@ interface AdditionalInfo {
 }
 
 export interface InsuranceFormData {
-  iban: string;
+  accountId: string;
   insuranceCompany: string;
   insurance: string;
-  name: string;
   policyNumber: string;
   startDate: string;
   paymentRate: string;
+  type: string;
+  paymentAmount: number;
   additionalInformation: AdditionalInfo[];
+  paymentInstalmentAmount: number;
+  paymentInstalmentUnitCurrency: string;
+  country: string;
+  paymentUnitCurrency: string;
+  isPaused: boolean;
   files: FileList;
 }
 
@@ -41,10 +50,16 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
   onSubmit,
   defaultValues,
 }) => {
-  const { register, handleSubmit, control, reset, watch } =
-    useForm<InsuranceFormData>({
-      defaultValues,
-    });
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<InsuranceFormData>({
+    defaultValues,
+  });
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -52,6 +67,7 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
   });
 
   const paymentRate = watch("paymentRate");
+  console.log(defaultValues);
 
   return (
     <Box
@@ -65,50 +81,118 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
       <SimpleGrid columns={2} spacing={10}>
         <Box>
           <FormControl isRequired>
-            <FormLabel>IBAN</FormLabel>
-            <Input {...register("iban")} />
+            <FormLabel>Account ID</FormLabel>
+            <Input
+              {...register("accountId", {
+                required: "Account ID ist verpflichtend",
+              })}
+            />
+            {errors.accountId && (
+              <FormErrorMessage>{errors.accountId.message}</FormErrorMessage>
+            )}
           </FormControl>
 
           <FormControl isRequired mt={4}>
             <FormLabel>Versicherungsgesellschaft</FormLabel>
-            <Input {...register("insuranceCompany")} />
+            <Input
+              {...register("insuranceCompany", {
+                required: "Versicherungsgesellschaft ist verpflichtend",
+              })}
+            />
+            {errors.insuranceCompany && (
+              <FormErrorMessage>
+                {errors.insuranceCompany.message}
+              </FormErrorMessage>
+            )}
           </FormControl>
 
           <FormControl isRequired mt={4}>
             <FormLabel>Versicherung</FormLabel>
-            <Input {...register("insurance")} />
-          </FormControl>
-
-          <FormControl isRequired mt={4}>
-            <FormLabel>Name</FormLabel>
-            <Input {...register("name")} />
+            <Input
+              {...register("insurance", {
+                required: "Versicherung ist verpflichtend",
+              })}
+            />
+            {errors.insurance && (
+              <FormErrorMessage>{errors.insurance.message}</FormErrorMessage>
+            )}
           </FormControl>
 
           <FormControl isRequired mt={4}>
             <FormLabel>Polizzennummer</FormLabel>
-            <Input {...register("policyNumber")} />
+            <Input
+              {...register("policyNumber", {
+                required: "Polizzennummer ist verpflichtend",
+              })}
+            />
+            {errors.policyNumber && (
+              <FormErrorMessage>{errors.policyNumber.message}</FormErrorMessage>
+            )}
           </FormControl>
 
           <FormControl isRequired mt={4}>
             <FormLabel>Laufzeit Beginn</FormLabel>
-            <Input type="date" {...register("startDate")} />
+            <Input
+              type="date"
+              {...register("startDate", {
+                required: "Laufzeit Beginn ist verpflichtend",
+              })}
+            />
+            {errors.startDate && (
+              <FormErrorMessage>{errors.startDate.message}</FormErrorMessage>
+            )}
           </FormControl>
 
           <FormControl isRequired mt={4}>
             <FormLabel>Zahlungsrate</FormLabel>
             <RadioGroup defaultValue={paymentRate}>
               <Stack spacing={5} direction="row">
-                <Radio {...register("paymentRate")} value="monthly">
+                <Radio {...register("paymentRate")} value="Monthly">
                   monatlich
                 </Radio>
-                <Radio {...register("paymentRate")} value="quarterly">
+                <Radio {...register("paymentRate")} value="Quarterly">
                   quartalsweise
                 </Radio>
-                <Radio {...register("paymentRate")} value="yearly">
+                <Radio {...register("paymentRate")} value="Yearly">
                   jährlich
                 </Radio>
               </Stack>
             </RadioGroup>
+          </FormControl>
+
+          <FormControl isRequired mt={4}>
+            <FormLabel>Typ</FormLabel>
+            <Input
+              {...register("type", { required: "Typ ist verpflichtend" })}
+            />
+            {errors.type && (
+              <FormErrorMessage>{errors.type.message}</FormErrorMessage>
+            )}
+          </FormControl>
+
+          <FormControl isRequired mt={4}>
+            <FormLabel>Zahlungsbetrag</FormLabel>
+            <InputGroup>
+              <Input
+                type="number"
+                step="0.01"
+                {...register("paymentAmount", {
+                  required: "Zahlungsbetrag ist verpflichtend",
+                  min: {
+                    value: 0,
+                    message: "Zahlungsbetrag darf nicht negativ sein",
+                  },
+                })}
+              />
+              <InputRightAddon>
+                {localStorage.getItem("currency") === "USD" ? "$" : "€"}
+              </InputRightAddon>
+            </InputGroup>
+            {errors.paymentAmount && (
+              <FormErrorMessage>
+                {errors.paymentAmount.message}
+              </FormErrorMessage>
+            )}
           </FormControl>
 
           <FormControl mt={4}>

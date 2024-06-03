@@ -1,6 +1,6 @@
 // contexts/FilterContext.js
 import { Option } from "chakra-multiselect";
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 export interface IFilters {
   freeText: string;
@@ -8,7 +8,6 @@ export interface IFilters {
   account: Option[];
   dateFrom: string;
   dateTo: string;
-  transactionType: Option[];
 }
 
 export interface IFilterContext {
@@ -30,7 +29,6 @@ export const FilterProvider = ({ children }: { children: React.ReactNode }) => {
     account: [],
     dateFrom: "",
     dateTo: "",
-    transactionType: [],
   });
   const [subscribers, setSubscribers] = useState<any[]>([]);
 
@@ -55,7 +53,6 @@ export const FilterProvider = ({ children }: { children: React.ReactNode }) => {
       account: [],
       dateFrom: "",
       dateTo: "",
-      transactionType: [],
     });
   };
 

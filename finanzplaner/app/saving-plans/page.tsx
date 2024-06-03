@@ -22,15 +22,15 @@ import {
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import HighchartsSankey from "highcharts/modules/sankey";
-import { ISavingPlan } from "@/models/ISavingPlan";
-import { SavingPlanService } from "@/services/SavingPlan.service";
+import { IStandingOrder } from "@/models/IStandingOrder";
+import { StandingOrdersService } from "@/services/StandingOrders.service";
 
 // Initialize the Sankey module
 HighchartsSankey(Highcharts);
 
 interface IPlanCardProps {
   accountName: string;
-  plans: ISavingPlan[];
+  plans: IStandingOrder[];
   cardBg: string;
   textColor: string;
   iconColor: string;
@@ -52,7 +52,7 @@ const PlanCard = ({
     </Flex>
     {plans.map((plan) => (
       <PlanDetails
-        key={plan.id}
+        key={plan.orderId}
         plan={plan}
         textColor={textColor}
         iconColor={iconColor}
@@ -62,7 +62,7 @@ const PlanCard = ({
 );
 
 interface IPlanDetailsProps {
-  plan: ISavingPlan;
+  plan: IStandingOrder;
   textColor: string;
   iconColor: string;
 }
@@ -76,52 +76,46 @@ const PlanDetails = ({ plan, textColor, iconColor }: IPlanDetailsProps) => (
     bg={useColorModeValue("gray.100", "gray.700")}
   >
     <Heading size="md" fontWeight="bold" mb={2}>
-      {plan.name}
+      {plan.reference}
     </Heading>
     <Flex alignItems="center" mb={1}>
       <Icon as={MdOutlineTrendingUp} w={5} h={5} color={iconColor} />
       <Text fontSize="lg" ml={2} color={textColor}>
-        {plan.to}
+        To: {plan.issuer}
       </Text>
     </Flex>
     <Flex alignItems="center" mb={1}>
       <Icon as={MdDateRange} w={5} h={5} color={iconColor} />
       <Text fontSize="lg" ml={2} color={textColor}>
-        Next: {plan.nextPayment}
+        Next: {new Date(plan.nextPayment).toLocaleDateString()}
       </Text>
     </Flex>
     <Flex alignItems="center" mb={1}>
       <Icon as={MdPayment} w={5} h={5} color={iconColor} />
       <Text fontSize="lg" ml={2} color={textColor}>
-        Rate: {plan.paymentrate}
-      </Text>
-    </Flex>
-    <Flex alignItems="center" mb={1}>
-      <Icon as={MdPayment} w={5} h={5} color={iconColor} />
-      <Text fontSize="lg" ml={2} color={textColor}>
-        Value: ${plan.value}
+        Amount: {plan.paymentAmount} {plan.paymentCurrency}
       </Text>
     </Flex>
     <Divider my={3} />
     <Text fontSize="lg" color={textColor}>
-      Until: {plan.until}
+      Until: {new Date(plan.finalPaymentDateTime).toLocaleDateString()}
     </Text>
   </Box>
 );
 
 function GroupedSavingsPlans() {
-  const [plans, setPlans] = useState<ISavingPlan[]>([]);
+  const [plans, setPlans] = useState<IStandingOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const service = SavingPlanService.getInstance();
-        const fetchedPlans = await service.fetchPlans();
+        const service = StandingOrdersService.getInstance();
+        const fetchedPlans = await service.fetchStandingOrders();
         setPlans(fetchedPlans);
       } catch (err) {
-        setError("Error fetching savings plans.");
+        setError("Error fetching standing orders.");
       } finally {
         setIsLoading(false);
       }
@@ -130,14 +124,13 @@ function GroupedSavingsPlans() {
   }, []);
 
   const data = plans.flatMap((plan) => [
-    [plan.accountName, plan.from, plan.value],
-    [plan.from, plan.to, plan.value],
+    [plan.creditorAccountId, plan.issuer, plan.paymentAmount],
   ]);
 
   const groupedPlans = useMemo(() => {
-    return plans.reduce<Record<string, ISavingPlan[]>>((acc, plan) => {
-      acc[plan.accountName] = acc[plan.accountName] || [];
-      acc[plan.accountName].push(plan);
+    return plans.reduce<Record<string, IStandingOrder[]>>((acc, plan) => {
+      acc[plan.creditorAccountId] = acc[plan.creditorAccountId] || [];
+      acc[plan.creditorAccountId].push(plan);
       return acc;
     }, {});
   }, [plans]);
@@ -152,8 +145,10 @@ function GroupedSavingsPlans() {
     tooltip: {
       headerFormat: null,
       pointFormat:
-        "{point.fromNode.name} \u2192 {point.toNode.name}: {point.weight:.2f} €",
-      nodeFormat: "{point.name}: {point.sum:.2f} €",
+        "{point.fromNode.name} \u2192 {point.toNode.name}: {point.weight:.2f} " +
+        localStorage.getItem("currency"),
+      nodeFormat:
+        "{point.name}: {point.sum:.2f} " + localStorage.getItem("currency"),
     },
     series: [
       {
@@ -201,7 +196,7 @@ function GroupedSavingsPlans() {
           <HighchartsReact highcharts={Highcharts} options={options} />
         </Box>
       </Skeleton>
-      <SimpleGrid ml={8} columns={{ sm: 1, md: 2, lg: 3 }} spacing={10}>
+      <SimpleGrid ml={8} mr={12} columns={{ sm: 1, md: 2, lg: 3 }} spacing={10}>
         {isLoading
           ? Array.from({ length: 3 }).map((_, idx) => (
               <Skeleton key={idx} height="300px" />

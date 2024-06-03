@@ -1,4 +1,4 @@
 export interface ICreditMasterData {
-  creditName: string;
-  id: number;
+  loanName: string;
+  loanId: number;
 }

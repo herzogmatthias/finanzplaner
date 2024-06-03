@@ -2,6 +2,7 @@
 import CreditChart from "@/components/creditChart/creditChart.component";
 import CreditDetails from "@/components/creditDetails/creditDetails.component";
 import { ICredit } from "@/models/ICredit";
+import { ICreditMasterData } from "@/models/ICreditMasterData";
 import CreditService from "@/services/Credit.service";
 import {
   Alert,
@@ -22,7 +23,7 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
-  Text,
+  useToast,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -30,9 +31,8 @@ import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 
 const CreditOverview = () => {
   const router = useRouter();
-  const [credits, setCredits] = useState<{ creditName: string; id: number }[]>(
-    []
-  );
+  const toast = useToast();
+  const [credits, setCredits] = useState<ICreditMasterData[]>([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [creditData, setCreditData] = useState<ICredit | null>(null);
   const [isLoadingCredits, setIsLoadingCredits] = useState(true);
@@ -41,31 +41,33 @@ const CreditOverview = () => {
   const [creditDataError, setCreditDataError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCredits = async () => {
-      setIsLoadingCredits(true);
-      setCreditsError(null);
-      try {
-        const service = CreditService.getInstance();
-        const fetchedCredits = await service.fetchCredits();
-        setCredits(fetchedCredits);
-        if (fetchedCredits.length > 0) {
-          fetchCreditDetails(fetchedCredits[0].id);
-        }
-      } catch (err) {
-        setCreditsError("Error fetching credits.");
-      } finally {
-        setIsLoadingCredits(false);
-      }
-    };
-
     fetchCredits();
   }, []);
+  const fetchCredits = async () => {
+    setTabIndex(0);
+    setIsLoadingCredits(true);
+    setCreditsError(null);
+    try {
+      const service = CreditService.getInstance();
+      const fetchedCredits = await service.fetchCredits();
+      console.log(fetchedCredits);
+      setCredits(fetchedCredits);
+      if (fetchedCredits.length > 0) {
+        fetchCreditDetails(fetchedCredits[0].loanId);
+      }
+    } catch (err) {
+      setCreditsError("Error fetching credits.");
+    } finally {
+      setIsLoadingCredits(false);
+    }
+  };
   const fetchCreditDetails = async (id: number) => {
     setIsLoadingCreditData(true);
     setCreditDataError(null);
     try {
       const service = CreditService.getInstance();
       const fetchedCreditData = await service.fetchCreditDetails(id);
+      console.log(fetchedCreditData);
       setCreditData(fetchedCreditData);
     } catch (err) {
       setCreditDataError("Error fetching credit details.");
@@ -74,9 +76,34 @@ const CreditOverview = () => {
     }
   };
 
+  const deleteCredit = async () => {
+    try {
+      const service = CreditService.getInstance();
+      const msg = await service.deleteCredit(credits[tabIndex].loanId);
+      fetchCredits();
+      console.log(msg);
+      toast({
+        title: msg,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    } catch (err) {
+      toast({
+        title: "Error deleting credit",
+        description: err as string,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  };
+
   const handleTabsChange = (index: number) => {
     setTabIndex(index);
-    fetchCreditDetails(credits[index].id);
+    fetchCreditDetails(credits[index].loanId);
   };
 
   if (isLoadingCredits) {
@@ -127,7 +154,7 @@ const CreditOverview = () => {
               <Box flex={1}>
                 <TabList width={"80%"}>
                   {credits.map((credit) => {
-                    return <Tab key={credit.id}>{credit.creditName}</Tab>;
+                    return <Tab key={credit.loanId}>{credit.loanName}</Tab>;
                   })}
                 </TabList>
               </Box>
@@ -136,12 +163,14 @@ const CreditOverview = () => {
                   <Button
                     colorScheme="blue"
                     onClick={() => {
-                      router.push(`/update-credit/${credits[tabIndex].id}`);
+                      router.push(`/update-credit/${credits[tabIndex].loanId}`);
                     }}
                   >
                     Ändern
                   </Button>
-                  <Button colorScheme="blue">Löschen</Button>
+                  <Button colorScheme="blue" onClick={deleteCredit}>
+                    Löschen
+                  </Button>
                   <Menu>
                     <MenuButton
                       colorScheme="blue"
@@ -150,12 +179,13 @@ const CreditOverview = () => {
                         <Icon size={"lg"} as={MdOutlineKeyboardArrowDown} />
                       }
                     >
-                      Dokumente ({creditData?.documents.length || 0})
+                      Dokumente ({creditData?.documents?.length || 0})
                     </MenuButton>
                     <MenuList>
-                      {creditData?.documents.map((document, index) => (
-                        <MenuItem key={index}>{document}</MenuItem>
-                      ))}
+                      {!creditData?.documents ??
+                        creditData?.documents.map((document, index) => (
+                          <MenuItem key={index}>{document}</MenuItem>
+                        ))}
                     </MenuList>
                   </Menu>
                 </ButtonGroup>
@@ -164,7 +194,7 @@ const CreditOverview = () => {
 
             <TabPanels>
               {credits.map((credit, index) => (
-                <TabPanel key={credit.id}>
+                <TabPanel key={credit.loanId}>
                   <Box display={"flex"} justifyContent={"space-between"}>
                     <Box flex={1}>
                       {isLoadingCreditData ? (

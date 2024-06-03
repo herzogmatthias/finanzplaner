@@ -4,14 +4,22 @@ export interface IAdditionalInformation {
 }
 
 export interface IInsurance {
-  id: number;
-  iban: string;
+  insuranceId: number;
+  policyHolderId: string;
   insuranceCompany: string;
+  insuranceType: string;
   name: string;
-  paymentrate: string;
-  payment: number;
-  startdate: string;
-  isPaused: boolean;
+  description: string;
+  paymentInstalmentAmount: number;
+  paymentInstalmentUnitCurrency: string;
+  country: string;
+  paymentUnitCurrency: string;
+  dateClosed: string;
+  frequency: string;
+  paymentAmount: number;
+  dateOpened: string;
+  insuranceState: boolean;
+  polizze: string;
   additionalInformation: IAdditionalInformation[];
   nextPayment: string;
   files: string[];
@@ -19,7 +27,7 @@ export interface IInsurance {
 
 export interface IChart1Data {
   monthlyPayment: number;
-  quarterPayment: number;
+  quarterlyPayment: number;
   yearlyPayment: number;
   costsNextMonth: number;
 }

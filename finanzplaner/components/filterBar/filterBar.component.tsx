@@ -25,7 +25,7 @@ const FilterBar = () => {
           size={"sm"}
         />
         <Input
-          placeholder="IBAN"
+          placeholder="BIC"
           type="text"
           value={filters.iban}
           onChange={(e) => handleFilterChange("iban", e.target.value)}
@@ -37,6 +37,7 @@ const FilterBar = () => {
             { value: "Account2", label: "Account 2" },
           ]}
           size="sm"
+          id="asdfasdf"
           placeholder="Accounts"
           value={filters.account}
           onChange={(e) => {
@@ -60,22 +61,6 @@ const FilterBar = () => {
             size={"sm"}
           />
         </Stack>
-        <MultiSelect
-          options={[
-            { value: "expenditure", label: "Ausgaben" },
-            { value: "revenue", label: "Einnahmen" },
-          ]}
-          size="sm"
-          placeholder="Einnahmen/Ausgaben"
-          value={filters.transactionType}
-          onChange={(e) => {
-            console.log(e);
-            handleFilterChange(
-              "transactionType",
-              Array.isArray(e) ? e : Array(e)
-            );
-          }}
-        ></MultiSelect>
       </HStack>
       <HStack spacing={3}>
         <Button size={"sm"} colorScheme="blue" onClick={notifySubscribers}>

@@ -25,6 +25,7 @@ export interface AccountData {
 
 class AccountService {
   private static instance: AccountService;
+  private static URL = "http://localhost:5200/Transaction/user/transactions";
   private accounts: Account[];
 
   private constructor() {
@@ -67,18 +68,36 @@ class AccountService {
     filters: IFilters
   ): Promise<RevenueExpenditure[]> {
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const data: RevenueExpenditure[] = [
-          { date: "2019-08-24", expense: 200, revenue: 300 },
-          { date: "2019-09-24", expense: 250, revenue: 350 },
-          { date: "2019-10-24", expense: 300, revenue: 400 },
-          { date: "2019-11-24", expense: 200, revenue: 450 },
-          { date: "2019-12-24", expense: 150, revenue: 500 },
-        ];
-        resolve(data);
-        // If you want to simulate an error, uncomment the next line
-        // reject(new Error("Failed to fetch revenue and expenditure data."));
-      }, 2000); // Simulate a network delay
+      fetch(AccountService.URL + "/expenserevenuechart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("jwt"),
+        },
+        body: JSON.stringify({
+          accounts: filters.account.map((a) => a.value),
+          dateFrom: filters.dateFrom
+            ? filters.dateFrom
+            : new Date(1900, 0, 1).toISOString(),
+          dateTo: filters.dateTo
+            ? filters.dateTo
+            : new Date(9998, 11, 31).toISOString(),
+          freeText: filters.freeText,
+          iban: filters.iban,
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Error fetching transactions.");
+          return response.json();
+        })
+        .then((data) => {
+          console.log(data);
+          resolve(data);
+        })
+        .catch((error) => {
+          console.log(error);
+          reject("Error fetching transactions.");
+        });
     });
   }
 
@@ -116,12 +135,38 @@ class AccountService {
     });
   }
   async fetchTransactionData(filters: IFilters): Promise<ITransaction[]> {
+    console.log("Hello");
+
     return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(transactions);
-        // If you want to simulate an error, uncomment the next line
-        // reject(new Error("Failed to fetch account data."));
-      }, 2000); // Simulate a network delay
+      fetch(AccountService.URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + localStorage.getItem("jwt"),
+        },
+        body: JSON.stringify({
+          accounts: filters.account.map((a) => a.value),
+          dateFrom: filters.dateFrom
+            ? filters.dateFrom
+            : new Date(1900, 0, 1).toISOString(),
+          dateTo: filters.dateTo
+            ? filters.dateTo
+            : new Date(9998, 11, 31).toISOString(),
+          freeText: filters.freeText,
+          iban: filters.iban,
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Error fetching transactions.");
+          return response.json();
+        })
+        .then((data) => {
+          console.log(data);
+          resolve(data);
+        })
+        .catch((error) => {
+          reject("Error fetching transactions.");
+        });
     });
   }
 }

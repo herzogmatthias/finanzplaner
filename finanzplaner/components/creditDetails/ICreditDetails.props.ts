@@ -1,7 +1,7 @@
 // interface
 export interface ICreditDetails {
   loanAmount: number;
-  annualRate: number;
+  interestRate: number;
   effectiveRate: number;
   otherFeesPA: number;
   term: number;

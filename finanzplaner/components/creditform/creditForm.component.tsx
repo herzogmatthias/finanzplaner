@@ -1,4 +1,3 @@
-// components/CreditForm.tsx
 "use client";
 import {
   Box,
@@ -10,10 +9,7 @@ import {
   VStack,
   useToast,
   InputGroup,
-  InputRightElement,
-  useMultiStyleConfig,
   InputRightAddon,
-  InputLeftAddon,
   InputLeftElement,
   Icon,
 } from "@chakra-ui/react";
@@ -21,24 +17,27 @@ import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { MdOutlineAccountBalance } from "react-icons/md";
+import CreditService from "@/services/Credit.service";
 
 interface CreditFormProps {
   isChanged?: boolean;
 }
 
-interface FormValues {
-  IBAN: string;
-  creditAmount: string;
-  duration: string;
+export interface FormValues {
+  accountID: string;
+  creditAmount: number;
+  startDate: string;
+  endDate: string;
   name: string;
-  interest: string;
-  extraCosts: string;
+  interest: number;
+  extraCosts: number;
+  frequency: string;
+  loanStatus: string;
   document: FileList | null;
 }
 
 const CreditForm = ({ isChanged }: CreditFormProps) => {
   const { id } = useParams(); // Extract ID from URL
-  const styles = useMultiStyleConfig("Button", { variant: "outline" });
   const {
     register,
     handleSubmit,
@@ -47,15 +46,18 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
   } = useForm<FormValues>({
     defaultValues: async () => {
       if (isChanged && id) {
-        return fetchCreditData(id);
+        return await fetchCreditData(id);
       } else {
         return {
-          IBAN: "",
-          creditAmount: "",
-          duration: "",
+          accountID: "",
+          creditAmount: 0,
+          startDate: "",
+          endDate: "",
           name: "",
-          interest: "",
-          extraCosts: "",
+          interest: 0,
+          extraCosts: 0,
+          frequency: "Monthly",
+          loanStatus: "Active",
           document: null,
         };
       }
@@ -63,34 +65,60 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
   });
   const toast = useToast();
 
-  // Mock function to simulate fetching data
+  // Fetch credit data
   const fetchCreditData = async (creditId: string | string[]) => {
-    // Here you would fetch from your API
-    // Simulating fetched data:
-    const fetchedData = {
-      IBAN: "DE89 3704 0044 0532 0130 00",
-      creditAmount: "5000",
-      duration: "24",
-      name: "John Doe",
-      interest: "5",
-      extraCosts: "100",
+    const creditService = CreditService.getInstance();
+    const fetchedData = await creditService.fetchCreditDetails(creditId as any);
+    let startDate = new Date(fetchedData.startDate);
+    let endDate = new Date(fetchedData.endDate);
+    startDate.setDate(startDate.getDate() + 1);
+    endDate.setDate(endDate.getDate() + 1);
+
+    return {
+      accountID: fetchedData.creditorAccountId,
+      creditAmount: fetchedData.loanAmount,
+      startDate: startDate.toISOString().substring(0, 10),
+      endDate: endDate.toISOString().substring(0, 10),
+      name: fetchedData.loanName,
+      interest: fetchedData.interestRate,
+      extraCosts: fetchedData.additionalCosts,
+      frequency: fetchedData.frequency,
+      loanStatus: fetchedData.loanStatus,
       document: null,
     };
-
-    return fetchedData;
   };
 
-  useEffect(() => {}, []);
-
-  const onSubmit = (data: FormValues) => {
-    console.log(data);
-    // Here you would handle file within 'data.document'
-    if (isChanged && id) {
-      // Call update API
-      console.log("Updating credit", id, data);
-    } else {
-      // Call add API
-      console.log("Adding new credit", data);
+  const onSubmit = async (data: FormValues) => {
+    try {
+      const creditService = CreditService.getInstance();
+      if (isChanged && id) {
+        await creditService.updateCredit(id, data);
+        toast({
+          title: "Credit updated.",
+          description: "The credit details have been successfully updated.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      } else {
+        await creditService.addCredit(data);
+        toast({
+          title: "Credit added.",
+          description: "The credit has been successfully added.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "An error occurred.",
+        description:
+          "Unable to save the credit details. Please try again later.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
@@ -98,32 +126,25 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
     <Box p={5} boxShadow={"md"} mx={20} mt={4}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} mx={20}>
-          <FormControl isInvalid={!!errors.IBAN}>
-            <FormLabel size={"sm"} htmlFor="IBAN">
-              IBAN
+          <FormControl isInvalid={!!errors.accountID}>
+            <FormLabel size={"sm"} htmlFor="accountID">
+              Account ID
             </FormLabel>
             <InputGroup size={"sm"}>
               <Input
                 size={"sm"}
-                id="IBAN"
+                id="accountID"
                 type="text"
-                {...register("IBAN", {
-                  required: "IBAN ist verpflichtend",
-                  pattern: {
-                    value:
-                      /^([A-Z]{2}[ \-]?[0-9]{2})(?=(?:[ \-]?[A-Z0-9]){9,30}$)((?:[ \-]?[A-Z0-9]{3,5}){2,7})([ \-]?[A-Z0-9]{1,3})?$/,
-                    message:
-                      "IBAN sollte im Format DE12 1234 1234 1234 1234 sein", // Custom message for pattern
-                  },
+                {...register("accountID", {
+                  required: "Account ID ist verpflichtend",
                 })}
               />
               <InputLeftElement>
                 <Icon as={MdOutlineAccountBalance}></Icon>
               </InputLeftElement>
             </InputGroup>
-
-            {errors.IBAN && (
-              <FormErrorMessage>{errors.IBAN.message}</FormErrorMessage>
+            {errors.accountID && (
+              <FormErrorMessage>{errors.accountID.message}</FormErrorMessage>
             )}
           </FormControl>
           <FormControl isInvalid={!!errors.creditAmount}>
@@ -137,40 +158,44 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
                   required: "Kreditbetrag ist verpflichtend",
                   min: {
                     value: 1,
-                    message: "Kreditbetrag sollte mindestens 1€ betragen", // Custom message for min
+                    message: "Kreditbetrag sollte mindestens 1€ betragen",
                   },
                 })}
               />
-              <InputRightAddon>€</InputRightAddon>
+              <InputRightAddon>
+                {localStorage.getItem("currency") == "EUR" ? "€" : "$"}
+              </InputRightAddon>
             </InputGroup>
             {errors.creditAmount && (
               <FormErrorMessage>{errors.creditAmount.message}</FormErrorMessage>
             )}
           </FormControl>
-          <FormControl isInvalid={!!errors.duration}>
-            <FormLabel htmlFor="duration">Dauer</FormLabel>
-            <InputGroup size={"sm"}>
-              <Input
-                size={"sm"}
-                id="duration"
-                type="number"
-                {...register("duration", {
-                  required: "Dauer ist verpflichtend",
-                  min: {
-                    value: 1,
-                    message: "Dauer sollte mindestens 1 Jahr betragen", // Custom message for min
-                  },
-                  max: {
-                    value: 99,
-                    message: "Dauer sollte nicht über 99 Jahre liegen", // Custom message for max
-                  },
-                })}
-              />
-              <InputRightAddon>Jahre</InputRightAddon>
-            </InputGroup>
-
-            {errors.duration && (
-              <FormErrorMessage>{errors.duration.message}</FormErrorMessage>
+          <FormControl isInvalid={!!errors.startDate}>
+            <FormLabel htmlFor="startDate">Startdatum</FormLabel>
+            <Input
+              size={"sm"}
+              id="startDate"
+              type="date"
+              {...register("startDate", {
+                required: "Startdatum ist verpflichtend",
+              })}
+            />
+            {errors.startDate && (
+              <FormErrorMessage>{errors.startDate.message}</FormErrorMessage>
+            )}
+          </FormControl>
+          <FormControl isInvalid={!!errors.endDate}>
+            <FormLabel htmlFor="endDate">Enddatum</FormLabel>
+            <Input
+              size={"sm"}
+              id="endDate"
+              type="date"
+              {...register("endDate", {
+                required: "Enddatum ist verpflichtend",
+              })}
+            />
+            {errors.endDate && (
+              <FormErrorMessage>{errors.endDate.message}</FormErrorMessage>
             )}
           </FormControl>
           <FormControl isInvalid={!!errors.name}>
@@ -193,12 +218,13 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
               <Input
                 size={"sm"}
                 id="interest"
-                type="text"
+                type="number"
+                step="0.01"
                 {...register("interest", {
                   required: "Zinsen sind verpflichtend",
                   min: {
                     value: 0,
-                    message: "Zinsen sollten nicht negativ sein", // Custom message for min
+                    message: "Zinsen sollten nicht negativ sein",
                   },
                 })}
               />
@@ -214,12 +240,14 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
               <Input
                 size={"sm"}
                 id="extraCosts"
-                type="text"
+                type="number"
+                step="0.01"
                 {...register("extraCosts")}
               />
-              <InputRightAddon>€</InputRightAddon>
+              <InputRightAddon>
+                {localStorage.getItem("currency") == "EUR" ? "€" : "$"}
+              </InputRightAddon>
             </InputGroup>
-
             {errors.extraCosts && (
               <FormErrorMessage>{errors.extraCosts.message}</FormErrorMessage>
             )}

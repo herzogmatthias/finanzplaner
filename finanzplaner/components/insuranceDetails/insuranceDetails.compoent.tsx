@@ -13,18 +13,20 @@ import {
 } from "@chakra-ui/react";
 import { IInsurance } from "@/models/IInsurance";
 
-const InsuranceDetails: React.FC<IInsurance> = ({
-  iban,
+const InsuranceDetails = ({
+  policyHolderId,
   insuranceCompany,
   name,
-  paymentrate,
-  payment,
-  startdate,
-  isPaused,
+  frequency,
+  polizze,
+  paymentAmount,
+  dateOpened,
+  insuranceState,
   additionalInformation,
   nextPayment,
+  insuranceType,
   files,
-}) => {
+}: IInsurance) => {
   return (
     <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p={4}>
       <Text fontSize="xl" fontWeight="bold" mb={4}>
@@ -38,27 +40,27 @@ const InsuranceDetails: React.FC<IInsurance> = ({
           </Tr>
           <Tr>
             <Td>Versicherung</Td>
-            <Td>{name}</Td>
+            <Td>{insuranceType}</Td>
           </Tr>
           <Tr>
-            <Td>IBAN</Td>
-            <Td>{iban}</Td>
+            <Td>Verknüpfter Account</Td>
+            <Td>{policyHolderId}</Td>
           </Tr>
           <Tr>
             <Td>Polizze</Td>
-            <Td>{name}</Td>
+            <Td>{polizze}</Td>
           </Tr>
           <Tr>
             <Td>Laufzeit</Td>
-            <Td>{startdate}</Td>
+            <Td>{new Date(dateOpened).toLocaleDateString("de-DE")}</Td>
           </Tr>
           <Tr>
             <Td>Zahlungsrate</Td>
-            <Td>{paymentrate}</Td>
+            <Td>{frequency}</Td>
           </Tr>
           <Tr>
             <Td>Pausiert</Td>
-            <Td>{isPaused ? "Ja" : "Nein"}</Td>
+            <Td>{insuranceState ? "Ja" : "Nein"}</Td>
           </Tr>
           <Tr>
             <Td>Nächste Zahlung</Td>
@@ -71,12 +73,13 @@ const InsuranceDetails: React.FC<IInsurance> = ({
       </Text>
       <Table variant="simple" mb={4}>
         <Tbody>
-          {additionalInformation.map((info, index) => (
-            <Tr key={index}>
-              <Td>{info.description}</Td>
-              <Td>{info.value}</Td>
-            </Tr>
-          ))}
+          {!additionalInformation ??
+            additionalInformation.map((info, index) => (
+              <Tr key={index}>
+                <Td>{info.description}</Td>
+                <Td>{info.value}</Td>
+              </Tr>
+            ))}
         </Tbody>
       </Table>
       <Flex justify="space-between" align="center" mt={4}>
@@ -84,7 +87,7 @@ const InsuranceDetails: React.FC<IInsurance> = ({
           Monatliche Kosten
         </Text>
         <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-          € {payment.toFixed(2)}
+          € {paymentAmount.toFixed(2)}
         </Text>
       </Flex>
     </Box>

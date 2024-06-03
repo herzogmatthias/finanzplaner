@@ -1,5 +1,6 @@
 // components/PersonalForm.tsx
 "use client";
+import { UserService } from "@/services/User.service";
 import {
   Box,
   Button,
@@ -30,26 +31,40 @@ const PersonalForm = () => {
     defaultValues: {
       email: "",
       username: "",
-      currencyUnit: "EUR", // Default to Euros
+      currencyUnit: localStorage.getItem("currency") || "EUR", // Default to Euros
     },
   });
 
   const toast = useToast();
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     console.log(data);
-    // Here you would handle the form submission
-    toast({
-      title: "Profile Updated",
-      description: "Your personal information has been successfully updated.",
-      status: "success",
-      duration: 5000,
-      isClosable: true,
-    });
+    try {
+      const userService = UserService.getInstance();
+      const result = await userService.updatePersonalData(
+        data.email,
+        data.username,
+        data.currencyUnit
+      );
+      toast({
+        title: "Profile updated successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (err) {
+      console.log(err);
+      toast({
+        title: "Failed to update profile.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   return (
-    <Box p={5} boxShadow={"md"}  mt={4}>
+    <Box p={5} boxShadow={"md"} mt={4}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack spacing={4} mx={20}>
           <FormControl isInvalid={!!errors.email}>
@@ -58,7 +73,6 @@ const PersonalForm = () => {
               id="email"
               type="email"
               {...register("email", {
-                required: "Email is required",
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
                   message: "Invalid email address",
@@ -71,25 +85,14 @@ const PersonalForm = () => {
           </FormControl>
           <FormControl isInvalid={!!errors.username}>
             <FormLabel htmlFor="username">Username</FormLabel>
-            <Input
-              id="username"
-              type="text"
-              {...register("username", {
-                required: "Username is required",
-              })}
-            />
+            <Input id="username" type="text" {...register("username")} />
             {errors.username && (
               <FormErrorMessage>{errors.username.message}</FormErrorMessage>
             )}
           </FormControl>
           <FormControl isInvalid={!!errors.currencyUnit}>
             <FormLabel htmlFor="currencyUnit">Currency Unit</FormLabel>
-            <Select
-              id="currencyUnit"
-              {...register("currencyUnit", {
-                required: "Currency unit is required",
-              })}
-            >
+            <Select id="currencyUnit" {...register("currencyUnit")}>
               <option value="EUR">Euros (EUR)</option>
               <option value="USD">US Dollars (USD)</option>
             </Select>
@@ -99,7 +102,7 @@ const PersonalForm = () => {
           </FormControl>
         </VStack>
         <Box mt={8} display={"flex"} justifyContent={"end"}>
-          <Button colorScheme="teal" type="submit">
+          <Button colorScheme="blue" type="submit">
             Update Profile
           </Button>
           <Button ml={4} colorScheme="red" type="reset">

@@ -1,16 +1,20 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { Box, Heading, Spinner, Center } from "@chakra-ui/react";
+import { Box, Heading, Spinner, Center, useToast } from "@chakra-ui/react";
 import InsuranceForm, {
   InsuranceFormData,
 } from "@/components/insuranceForm/insuranceForm.component";
 import { SubmitHandler } from "react-hook-form";
+import { useParams } from "next/navigation";
+import InsuranceService from "@/services/Insurance.service";
 
 interface UpdateInsuranceProps {
   insuranceId: string;
 }
 
 const Page = ({ insuranceId }: UpdateInsuranceProps) => {
+  const { id } = useParams();
+  const toast = useToast();
   const [defaultValues, setDefaultValues] = useState<InsuranceFormData | null>(
     null
   );
@@ -20,30 +24,44 @@ const Page = ({ insuranceId }: UpdateInsuranceProps) => {
     // Replace the following line with your fetch logic
     const fetchInsuranceData = async () => {
       // Mock data
-      const mockData: InsuranceFormData = {
-        iban: "DE89 3704 0044 0532 0130 00",
-        insuranceCompany: "Mock Insurance Company",
-        insurance: "Mock Insurance",
-        name: "Max Mustermann",
-        policyNumber: "1234567890",
-        startDate: "2023-01-01",
-        paymentRate: "monthly",
-        additionalInformation: [
-          { description: "Extra Coverage", value: "5000" },
-          { description: "Roadside Assistance", value: "Included" },
-        ],
-        files: new DataTransfer().files,
-      };
-
-      setDefaultValues(mockData);
+      const insuranceService = InsuranceService.getInstance();
+      const details = await insuranceService.fetchInsuranceDetails(id as any);
+      let startdate = new Date(details.dateOpened);
+      startdate.setDate(startdate.getDate() + 1);
+      setDefaultValues({
+        accountId: details.policyHolderId,
+        insurance: details.description,
+        policyNumber: details.polizze,
+        startDate: startdate.toISOString().substring(0, 10),
+        paymentRate: details.frequency,
+        type: details.insuranceType,
+        isPaused: details.insuranceState,
+        files: [] as any[],
+        ...details,
+      });
     };
 
     fetchInsuranceData();
-  }, [insuranceId]);
+  }, []);
 
-  const handleSubmit: SubmitHandler<InsuranceFormData> = (data) => {
-    console.log(data);
-    // Here you can handle the form submission, e.g., send it to an API
+  const handleSubmit: SubmitHandler<InsuranceFormData> = async (data) => {
+    try {
+      const insuranceService = InsuranceService.getInstance();
+      await insuranceService.updateInsurance(id as any, data);
+      toast({
+        title: "Versicherung aktualisiert",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Fehler beim Aktualisieren der Versicherung",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   if (!defaultValues) {

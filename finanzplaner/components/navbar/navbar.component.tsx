@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -25,7 +25,7 @@ import { UserService } from "@/services/User.service";
 const Navbar = () => {
   const router = useRouter();
   const userService = UserService.getInstance();
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const app = useApp();
   const toast = useToast();
   const pathname = usePathname();
@@ -33,7 +33,6 @@ const Navbar = () => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    // TODO: Implement your login logic here
     const msg = await userService.login(username, password);
     toast({
       title: msg.msg,
@@ -43,16 +42,40 @@ const Navbar = () => {
     });
     if (!msg.error) {
       setIsLoggedIn(true);
+      router.push("/accounts");
     }
   };
+
   const handleLogout = () => {
-    userService.deleteJWT();
+    userService.logout();
     setIsLoggedIn(false);
     router.push("/");
   };
 
+  const handleConnectAccount = async () => {
+    try {
+      await userService.fetchDummyData();
+      toast({
+        title: "Konto verbunden.",
+        description: "Das Konto wurde erfolgreich verbunden.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      router.reload();
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Konto konnte nicht verbunden werden.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   useEffect(() => {
-    //setIsLoggedIn(userService.getJWT() !== "");
+    setIsLoggedIn(userService.getJWT() !== "");
   }, []);
 
   const bgColor = useColorModeValue("blue.500", "blue.200");
@@ -74,7 +97,7 @@ const Navbar = () => {
           color={"white"}
           colorScheme="blue"
           marginRight={4}
-          display={{ base: isLoggedIn && pathname !== "/" ? "flex" : "none" }} // Adjust visibility responsive
+          display={{ base: isLoggedIn && pathname !== "/" ? "flex" : "none" }}
         />
         <Box
           color="white"
@@ -110,9 +133,17 @@ const Navbar = () => {
           <Button
             variant="solid"
             colorScheme="blue"
+            marginRight="4"
             onClick={() => {
-              /* logic to handle 'Konto verbinden' action */
+              router.push("/add-insurance");
             }}
+          >
+            Versicherung hinzufügen
+          </Button>
+          <Button
+            variant="solid"
+            colorScheme="blue"
+            onClick={handleConnectAccount}
           >
             Konto verbinden
           </Button>

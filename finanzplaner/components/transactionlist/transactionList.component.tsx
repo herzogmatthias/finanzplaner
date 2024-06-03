@@ -1,4 +1,4 @@
-// components/VirtualizedTransactionList.tsx
+"use client";
 import { useMemo, useEffect, useState } from "react";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -36,6 +36,7 @@ const TransactionList = () => {
       const result = await service.fetchTransactionData(filters);
       setTransactions(result);
     } catch (err) {
+      console.log(err);
       setError("Failed to fetch transactions.");
     } finally {
       setIsLoading(false);
@@ -47,7 +48,7 @@ const TransactionList = () => {
       fetchData(filters);
     });
     return unsubscribe; // Cleanup on unmount
-  }, [subscribe]);
+  }, []);
 
   const groupedTransactions: [string, ITransaction[]][] = useMemo(() => {
     const groups = transactions.reduce((acc, transaction) => {
@@ -125,7 +126,8 @@ const TransactionList = () => {
                 />
                 <VStack align="start" flex="1">
                   <Text fontWeight="bold">
-                    Transaction ID: {item.transactionID}
+                    Account ID (Transaction ID): {item.accountId} (
+                    {item.transactionId})
                   </Text>
                   <Text>Details: {item.transactionInformation}</Text>
                   <Flex align="center">
@@ -136,7 +138,8 @@ const TransactionList = () => {
                       size="lg"
                       colorScheme={item.amount >= 0 ? "green" : "red"}
                     >
-                      €{Math.abs(item.amount)}
+                      {item.amountCurrency == "EUR" ? "€" : "$"}
+                      {Math.abs(item.amount)}
                     </Tag>
                   </Flex>
                 </VStack>
