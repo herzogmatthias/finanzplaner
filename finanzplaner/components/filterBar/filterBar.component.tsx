@@ -1,12 +1,35 @@
 "use client";
 import { useFilters } from "@/context/filter.context";
+import { BankAccountService } from "@/services/BankAccount.service";
 import { Box, Button, HStack, Input, Stack } from "@chakra-ui/react";
 import { MultiSelect } from "chakra-multiselect";
+import { useEffect, useState } from "react";
 
 const FilterBar = () => {
   const { filters, handleFilterChange, resetFilters, notifySubscribers } =
     useFilters()!;
+  const [accounts, setAccounts] = useState<{ value: string; label: string }[]>(
+    []
+  );
 
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const bankAccountService = BankAccountService.getInstance();
+        const data = await bankAccountService.fetchBankAccounts();
+        setAccounts(
+          data.map((account) => ({
+            value: account.accountId,
+            label: account.accountId,
+          }))
+        );
+      } catch (err) {
+        console.error("Fehler beim Laden der Konten");
+      }
+    };
+
+    fetchAccounts();
+  }, []);
   return (
     <Box
       p={4}
@@ -32,10 +55,7 @@ const FilterBar = () => {
           size={"sm"}
         />
         <MultiSelect
-          options={[
-            { value: "Account1", label: "Account 1" },
-            { value: "Account2", label: "Account 2" },
-          ]}
+          options={accounts}
           size="sm"
           id="asdfasdf"
           placeholder="Konten"

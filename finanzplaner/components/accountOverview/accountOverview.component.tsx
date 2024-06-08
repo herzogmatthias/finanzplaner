@@ -9,10 +9,12 @@ import {
   AlertIcon,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import AccountService, { Account } from "@/services/Account.service";
+import { BankAccountService } from "@/services/BankAccount.service";
+import { IAccount } from "@/models/IAccount";
+import { MdAccountBalanceWallet } from "react-icons/md";
 
 const AccountOverview = () => {
-  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accounts, setAccounts] = useState<IAccount[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +23,7 @@ const AccountOverview = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const service = AccountService.getInstance();
+        const service = BankAccountService.getInstance();
         const data = await service.fetchAccounts();
         setAccounts(data);
       } catch (err) {
@@ -77,7 +79,7 @@ const AccountOverview = () => {
     <SimpleGrid columns={6} spacing={10}>
       {accounts.map((account) => (
         <Box
-          key={account.id}
+          key={account.accountId}
           p={4}
           bg="white"
           boxShadow="md"
@@ -88,14 +90,25 @@ const AccountOverview = () => {
         >
           <Box>
             <Text fontSize="lg" fontWeight="bold">
-              {account.name}
+              {account.accountName}
             </Text>
-            <Text>{account.balance}</Text>
+            <Text>
+              {new Intl.NumberFormat("de-DE", {
+                style: "currency",
+                currency: localStorage.getItem("currency") || "EUR",
+              }).format(account.balance)}
+            </Text>
             <Text fontSize="sm" color="gray.500">
-              {account.bank}
+              {account.bankName}
             </Text>
           </Box>
-          <Icon as={account.icon} w={8} h={8} mr={4} color="blue.500" />
+          <Icon
+            as={MdAccountBalanceWallet}
+            w={8}
+            h={8}
+            mr={4}
+            color="blue.500"
+          />
         </Box>
       ))}
     </SimpleGrid>

@@ -1,15 +1,32 @@
 "use client";
 import React from "react";
-import { Box, Heading } from "@chakra-ui/react";
+import { Box, Heading, useToast } from "@chakra-ui/react";
 import InsuranceForm, {
   InsuranceFormData,
 } from "@/components/insuranceForm/insuranceForm.component";
 import { SubmitHandler } from "react-hook-form";
+import InsuranceService from "@/services/Insurance.service";
 
 const Page = () => {
-  const handleSubmit: SubmitHandler<InsuranceFormData> = (data) => {
-    console.log(data);
-    // Here you can handle the form submission, e.g., send it to an API
+  const toast = useToast();
+  const handleSubmit: SubmitHandler<InsuranceFormData> = async (data) => {
+    try {
+      const insuranceService = InsuranceService.getInstance();
+      await insuranceService.addInsurance(data);
+      toast({
+        title: "Versicherung hinzugefügt!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      toast({
+        title: "Fehler beim Hinzufügen der Versicherung",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   return (

@@ -8,11 +8,7 @@ import { SubmitHandler } from "react-hook-form";
 import { useParams } from "next/navigation";
 import InsuranceService from "@/services/Insurance.service";
 
-interface UpdateInsuranceProps {
-  insuranceId: string;
-}
-
-const Page = ({ insuranceId }: UpdateInsuranceProps) => {
+const Page = () => {
   const { id } = useParams();
   const toast = useToast();
   const [defaultValues, setDefaultValues] = useState<InsuranceFormData | null>(
@@ -31,7 +27,6 @@ const Page = ({ insuranceId }: UpdateInsuranceProps) => {
       setDefaultValues({
         accountId: details.policyHolderId,
         insurance: details.description,
-        policyNumber: details.polizze,
         startDate: startdate.toISOString().substring(0, 10),
         paymentRate: details.frequency,
         type: details.insuranceType,

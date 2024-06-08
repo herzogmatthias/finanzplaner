@@ -27,7 +27,6 @@ export interface InsuranceFormData {
   accountId: string;
   insuranceCompany: string;
   insurance: string;
-  policyNumber: string;
   startDate: string;
   paymentRate: string;
   type: string;
@@ -115,18 +114,6 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
             />
             {errors.insurance && (
               <FormErrorMessage>{errors.insurance.message}</FormErrorMessage>
-            )}
-          </FormControl>
-
-          <FormControl isRequired mt={4}>
-            <FormLabel>Polizzennummer</FormLabel>
-            <Input
-              {...register("policyNumber", {
-                required: "Polizzennummer ist verpflichtend",
-              })}
-            />
-            {errors.policyNumber && (
-              <FormErrorMessage>{errors.policyNumber.message}</FormErrorMessage>
             )}
           </FormControl>
 

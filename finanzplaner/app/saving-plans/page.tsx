@@ -186,7 +186,7 @@ function GroupedSavingsPlans() {
   return (
     <Box ml={8} mt={8}>
       <Heading as="h1" size="xl" mb={6}>
-        Sparpläne
+        Daueraufträge
       </Heading>
       <Skeleton isLoaded={!isLoading} ml={8} mb={8} mr={12}>
         <Box p={5} shadow="md" borderWidth="1px" borderRadius="lg" bg={cardBg}>

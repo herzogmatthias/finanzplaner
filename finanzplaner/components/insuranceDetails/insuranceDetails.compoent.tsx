@@ -18,7 +18,6 @@ const InsuranceDetails = ({
   insuranceCompany,
   name,
   frequency,
-  polizze,
   paymentAmount,
   dateOpened,
   insuranceState,
@@ -33,6 +32,7 @@ const InsuranceDetails = ({
     Quarterly: "Quartalsweise",
   };
   const translatedFrequency = frequencyMap[frequency] || frequency;
+  console.log(additionalInformation);
   return (
     <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p={4}>
       <Text fontSize="xl" fontWeight="bold" mb={4}>
@@ -51,10 +51,6 @@ const InsuranceDetails = ({
           <Tr>
             <Td>Verknüpfter Account</Td>
             <Td>{policyHolderId}</Td>
-          </Tr>
-          <Tr>
-            <Td>Polizze</Td>
-            <Td>{polizze}</Td>
           </Tr>
           <Tr>
             <Td>Laufzeit</Td>
@@ -79,13 +75,14 @@ const InsuranceDetails = ({
       </Text>
       <Table variant="simple" mb={4}>
         <Tbody>
-          {!additionalInformation ??
-            additionalInformation.map((info, index) => (
-              <Tr key={index}>
-                <Td>{info.description}</Td>
-                <Td>{info.value}</Td>
-              </Tr>
-            ))}
+          {additionalInformation
+            ? additionalInformation.map((info, index) => (
+                <Tr key={index}>
+                  <Td>{info.description}</Td>
+                  <Td>{info.value}</Td>
+                </Tr>
+              ))
+            : null}
         </Tbody>
       </Table>
       <Flex justify="space-between" align="center" mt={4}>

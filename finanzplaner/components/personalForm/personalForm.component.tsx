@@ -93,8 +93,8 @@ const PersonalForm = () => {
           <FormControl isInvalid={!!errors.currencyUnit}>
             <FormLabel htmlFor="currencyUnit">Currency Unit</FormLabel>
             <Select id="currencyUnit" {...register("currencyUnit")}>
-              <option value="EUR">Euros (EUR)</option>
-              <option value="USD">US Dollars (USD)</option>
+              <option value="EUR">Euro (EUR)</option>
+              <option value="USD">US Dollar (USD)</option>
             </Select>
             {errors.currencyUnit && (
               <FormErrorMessage>{errors.currencyUnit.message}</FormErrorMessage>

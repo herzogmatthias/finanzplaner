@@ -149,9 +149,6 @@ class InsuranceService {
           insuranceId: id,
           policyHolderId: insurance.accountId,
           insuranceType: insurance.type,
-          paymentInstalmentAmount: insurance.paymentInstalmentAmount,
-          paymentInstalmentUnitCurrency:
-            insurance.paymentInstalmentUnitCurrency,
           country: insurance.country,
           paymentUnitCurrency: insurance.paymentUnitCurrency,
           dateClosed: null,
@@ -162,7 +159,6 @@ class InsuranceService {
           additionalInformation: JSON.stringify(
             insurance.additionalInformation
           ),
-          polizze: insurance.policyNumber,
           insuranceCompany: insurance.insuranceCompany,
           description: insurance.insurance,
         }),
@@ -176,6 +172,44 @@ class InsuranceService {
         })
         .catch((err) => {
           reject("Error updating insurance.");
+        });
+    });
+  }
+  async addInsurance(insurance: InsuranceFormData): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      fetch(`${InsuranceService.URL}insurance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+        },
+        body: JSON.stringify({
+          Iban: "",
+          PolicyHolderId: insurance.accountId,
+          InsuranceType: insurance.type,
+          Country: "",
+          PaymentUnitCurrency: localStorage.getItem("currency") || "EUR",
+          DateClosed: null,
+          PaymentRate: insurance.paymentRate,
+          PaymentAmount: insurance.paymentAmount,
+          DateOpened: new Date(insurance.startDate).toISOString(),
+          InsuranceState: false,
+          AdditionalInformation: JSON.stringify(
+            insurance.additionalInformation
+          ),
+          InsuranceCompany: insurance.insuranceCompany,
+          Name: insurance.insurance,
+        }),
+      })
+        .then((res) => {
+          if (res.ok) {
+            resolve();
+          } else {
+            reject("Error adding insurance.");
+          }
+        })
+        .catch((err) => {
+          reject("Error adding insurance.");
         });
     });
   }

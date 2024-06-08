@@ -73,6 +73,7 @@ const InsuranceOverview = () => {
     try {
       const service = InsuranceService.getInstance();
       const fetchedInsuranceData = await service.fetchInsuranceDetails(id);
+      console.log(fetchedInsuranceData);
       setInsuranceData(fetchedInsuranceData);
     } catch (err) {
       setInsuranceDataError("Fehler beim laden der Details");

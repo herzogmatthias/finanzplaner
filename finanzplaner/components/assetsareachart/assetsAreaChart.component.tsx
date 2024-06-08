@@ -28,7 +28,9 @@ ChartJS.register(
 
 const AssetsAreaChart = () => {
   const { subscribe } = useFilters()!;
-  const [data, setData] = useState<AccountData[]>([]);
+  const [data, setData] = useState<{
+    accounts: { [key: string]: AccountData };
+  }>({ accounts: {} });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [firstRender, setFirstRender] = useState<boolean>(true);
@@ -76,7 +78,7 @@ const AssetsAreaChart = () => {
     );
   }
 
-  if (data.length === 0 && firstRender) {
+  if (Object.keys(data.accounts).length === 0 && firstRender) {
     return (
       <Box>
         <Alert status="info">
@@ -86,7 +88,7 @@ const AssetsAreaChart = () => {
       </Box>
     );
   }
-  if (data.length === 0 && !firstRender) {
+  if (Object.keys(data.accounts).length === 0 && !firstRender) {
     return (
       <Box>
         <Alert status="warning">
@@ -98,10 +100,12 @@ const AssetsAreaChart = () => {
   }
 
   const chartData = {
-    labels: data[0].data.map((item) => item.date), // Assuming all accounts have the same dates
-    datasets: data.map((account) => ({
-      label: account.name,
-      data: account.data.map((item) => item.value),
+    labels: data.accounts[Object.keys(data.accounts)[0]].data.map((item) =>
+      new Date(item.date).toLocaleDateString()
+    ), // Assuming all accounts have the same dates
+    datasets: Object.entries(data.accounts).map((account) => ({
+      label: account["1"].accountName,
+      data: account["1"].data.map((item) => item.value),
       fill: true,
     })),
   };

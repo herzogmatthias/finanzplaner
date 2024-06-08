@@ -64,6 +64,7 @@ export class UserService {
         })
         .then((data) => {
           resolve(data);
+          localStorage.setItem("jwt", data.token);
           localStorage.setItem("currency", currency);
         })
         .catch((error) => {

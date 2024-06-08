@@ -91,7 +91,7 @@ class CreditService {
         },
         body: JSON.stringify({
           loanId: id,
-          CreditorAccountId: data.accountID,
+          creditorAccountId: data.accountID,
           loanAmount: data.creditAmount,
           interestRate: data.interest,
           effectiveInterestRate: 0,
@@ -125,7 +125,22 @@ class CreditService {
           "Content-Type": "application/json",
           Authorization: "Bearer " + localStorage.getItem("jwt"),
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          creditorAccountId: data.accountID,
+          loanAmount: data.creditAmount,
+          interestRate: data.interest,
+          effectiveInterestRate: 0,
+          startDate: new Date(data.startDate).toISOString(),
+          endDate: new Date(data.endDate).toISOString(),
+          loanType: "Credit",
+          loanName: data.name,
+          additionalCosts: data.extraCosts,
+          frequency: data.frequency,
+          loanStatus: "Active",
+          loanUnitCurrency: localStorage.getItem("currency") || "EUR",
+          interestRateUnitCurrency: "",
+          loanTerm: 0,
+        }),
       })
         .then((response) => {
           response.ok

@@ -1,3 +1,4 @@
+import { IAccount } from "@/models/IAccount";
 import { IBankAccount } from "@/models/IBankAccount";
 
 export class BankAccountService {
@@ -47,6 +48,25 @@ export class BankAccountService {
         })
         .catch((error) => {
           reject("Error deleting bank account.");
+        });
+    });
+  }
+
+  fetchAccounts(): Promise<IAccount[]> {
+    return new Promise((resolve, reject) => {
+      fetch(`http://localhost:5200/BankAccount/user/accounts`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("jwt")}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          resolve(data);
+        })
+        .catch((error) => {
+          reject("Error fetching accounts.");
         });
     });
   }

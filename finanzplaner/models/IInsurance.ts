@@ -19,7 +19,6 @@ export interface IInsurance {
   paymentAmount: number;
   dateOpened: string;
   insuranceState: boolean;
-  polizze: string;
   additionalInformation: IAdditionalInformation[];
   nextPayment: string;
   files: string[];

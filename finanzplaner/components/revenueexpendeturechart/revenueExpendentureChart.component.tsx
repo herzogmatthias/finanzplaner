@@ -76,7 +76,7 @@ const RevenueExpenditureChart = () => {
       <Box>
         <Alert status="info">
           <AlertIcon />
-          Please press 'start' to fetch data.
+          Bitte drücke 'Start' um die Daten zu laden.
         </Alert>
       </Box>
     );
@@ -87,24 +87,24 @@ const RevenueExpenditureChart = () => {
       <Box>
         <Alert status="warning">
           <AlertIcon />
-          No data available.
+          Keine Daten gefunden.
         </Alert>
       </Box>
     );
   }
 
   const chartData = {
-    labels: data.map((item) => item.date),
+    labels: data.map((item) => new Date(item.date).toLocaleDateString()),
     datasets: [
       {
-        label: "Revenue",
+        label: "Einnahmen",
         data: data.map((item) => item.revenue),
         backgroundColor: "rgba(75, 192, 192, 0.5)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
       },
       {
-        label: "Expenditure",
+        label: "Ausgaben",
         data: data.map((item) => item.expense),
         backgroundColor: "rgba(255, 99, 132, 0.5)",
         borderColor: "rgba(255, 99, 132, 1)",
