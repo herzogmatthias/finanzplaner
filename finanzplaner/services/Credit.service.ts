@@ -138,7 +138,7 @@ class CreditService {
           frequency: data.frequency,
           loanStatus: "Active",
           loanUnitCurrency: localStorage.getItem("currency") || "EUR",
-          interestRateUnitCurrency: "",
+          interestRateUnitCurrency: "EUR",
           loanTerm: 0,
         }),
       })
