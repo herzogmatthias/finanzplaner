@@ -25,10 +25,13 @@ import {
 import { MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { IInsurance } from "@/models/IInsurance";
 import InsuranceService from "@/services/Insurance.service";
-import InsuranceDetails from "@/components/insuranceDetails/insuranceDetails.compoent";
 import CostHistoryChart from "@/components/costHistoryChart/costHistoryChart.component";
 import IntervalPaymentChart from "@/components/intervalPaymentChart/intervalPaymentChart.component";
 import { useRouter } from "next/navigation";
+import withAuth from "@/middleware/withAuth.middleware";
+import { IDocument } from "@/models/IDocument";
+import { FileService } from "@/services/File.service";
+import InsuranceDetails from "@/components/insuranceDetails/insuranceDetails.compoent";
 
 const InsuranceOverview = () => {
   const router = useRouter();
@@ -38,12 +41,15 @@ const InsuranceOverview = () => {
   >([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [insuranceData, setInsuranceData] = useState<IInsurance | null>(null);
+  const [documents, setDocuments] = useState<IDocument[]>([]);
   const [isLoadingInsurances, setIsLoadingInsurances] = useState(true);
   const [isLoadingInsuranceData, setIsLoadingInsuranceData] = useState(false);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
   const [insurancesError, setInsurancesError] = useState<string | null>(null);
   const [insuranceDataError, setInsuranceDataError] = useState<string | null>(
     null
   );
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInsurances();
@@ -59,6 +65,7 @@ const InsuranceOverview = () => {
       setInsurances(fetchedInsurances);
       if (fetchedInsurances.length > 0) {
         fetchInsuranceDetails(fetchedInsurances[0].insuranceId);
+        fetchDocuments(fetchedInsurances[0].insuranceId);
       }
     } catch (err) {
       setInsurancesError("Fehler beim laden der Versicherungen");
@@ -73,7 +80,6 @@ const InsuranceOverview = () => {
     try {
       const service = InsuranceService.getInstance();
       const fetchedInsuranceData = await service.fetchInsuranceDetails(id);
-      console.log(fetchedInsuranceData);
       setInsuranceData(fetchedInsuranceData);
     } catch (err) {
       setInsuranceDataError("Fehler beim laden der Details");
@@ -82,9 +88,75 @@ const InsuranceOverview = () => {
     }
   };
 
+  const fetchDocuments = async (id: number) => {
+    setDocuments([]);
+    setIsLoadingDocuments(true);
+    setDocumentsError(null);
+    try {
+      const service = FileService.getInstance();
+      const fetchedDocuments = await service.fetchFiles(id.toString(), "I");
+      setDocuments(fetchedDocuments);
+    } catch (err) {
+      setDocumentsError("Fehler beim laden der Dokumente");
+    } finally {
+      setIsLoadingDocuments(false);
+    }
+  };
+
   const handleTabsChange = (index: number) => {
     setTabIndex(index);
     fetchInsuranceDetails(insurances[index].insuranceId);
+    fetchDocuments(insurances[index].insuranceId);
+  };
+
+  const handleDelete = async (document: IDocument) => {
+    try {
+      const service = FileService.getInstance();
+      await service.deleteFile(
+        insurances[tabIndex].insuranceId as any,
+        document.fileName
+      );
+      fetchDocuments(insurances[tabIndex].insuranceId); // Refresh documents list
+      toast({
+        title: `Datei gelöscht: ${document.fileName}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top",
+      });
+    } catch (err) {
+      toast({
+        title: "Fehler beim Löschen der Datei",
+        description: err as string,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  };
+
+  const downloadDocument = async (document: IDocument) => {
+    try {
+      const service = FileService.getInstance();
+      await service.downloadFile(
+        document.fileID!.toString(),
+        document.fileName
+      );
+      toast({
+        title: "Dokument heruntergeladen.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (err) {
+      toast({
+        title: "Fehler beim Herunterladen des Dokuments.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   const deleteInsurance = async () => {
@@ -94,7 +166,6 @@ const InsuranceOverview = () => {
         insurances[tabIndex].insuranceId
       );
       fetchInsurances();
-      console.log(msg);
       toast({
         title: "Versicherung erfolgreich gelöscht.",
         status: "success",
@@ -157,14 +228,12 @@ const InsuranceOverview = () => {
               mr={4}
             >
               <Box flex={1}>
-                <TabList width={"80%"}>
-                  {insurances.map((insurance) => {
-                    return (
-                      <Tab key={insurance.insuranceId}>
-                        {insurance.description}
-                      </Tab>
-                    );
-                  })}
+                <TabList overflow={"hidden"} width={"80%"}>
+                  {insurances.map((insurance) => (
+                    <Tab key={insurance.insuranceId}>
+                      {insurance.description}
+                    </Tab>
+                  ))}
                 </TabList>
               </Box>
               <Box>
@@ -190,13 +259,44 @@ const InsuranceOverview = () => {
                         <Icon size={"lg"} as={MdOutlineKeyboardArrowDown} />
                       }
                     >
-                      Dokumente ({insuranceData?.files?.length || 0})
+                      Dokumente ({documents.length || 0})
                     </MenuButton>
                     <MenuList>
-                      {!insuranceData?.files ??
-                        insuranceData?.files.map((document, index) => (
-                          <MenuItem key={index}>{document}</MenuItem>
-                        ))}
+                      {documents.length > 0 ? (
+                        documents.map((document, index) => (
+                          <MenuItem
+                            key={index}
+                            cursor={"default"}
+                            disabled={true}
+                            closeOnSelect={false}
+                            display={"flex"}
+                            justifyContent={"space-between"}
+                            alignItems={"center"}
+                          >
+                            <span>{document.fileName}</span>
+                            <span>
+                              <Button
+                                onClick={() => downloadDocument(document)}
+                                ml={4}
+                                colorScheme="blue"
+                                size="xs"
+                              >
+                                Download
+                              </Button>
+                              <Button
+                                ml={2}
+                                colorScheme="red"
+                                size="xs"
+                                onClick={() => handleDelete(document)}
+                              >
+                                Löschen
+                              </Button>
+                            </span>
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem>Keine Dokumente verfügbar</MenuItem>
+                      )}
                     </MenuList>
                   </Menu>
                 </ButtonGroup>
@@ -242,4 +342,4 @@ const InsuranceOverview = () => {
   );
 };
 
-export default InsuranceOverview;
+export default withAuth(InsuranceOverview);

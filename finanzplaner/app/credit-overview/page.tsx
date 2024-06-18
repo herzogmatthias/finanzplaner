@@ -1,9 +1,12 @@
 "use client";
 import CreditChart from "@/components/creditChart/creditChart.component";
 import CreditDetails from "@/components/creditDetails/creditDetails.component";
+import withAuth from "@/middleware/withAuth.middleware";
 import { ICredit } from "@/models/ICredit";
 import { ICreditMasterData } from "@/models/ICreditMasterData";
+import { IDocument } from "@/models/IDocument";
 import CreditService from "@/services/Credit.service";
+import { FileService } from "@/services/File.service";
 import {
   Alert,
   AlertIcon,
@@ -35,14 +38,18 @@ const CreditOverview = () => {
   const [credits, setCredits] = useState<ICreditMasterData[]>([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [creditData, setCreditData] = useState<ICredit | null>(null);
+  const [documents, setDocuments] = useState<IDocument[]>([]);
   const [isLoadingCredits, setIsLoadingCredits] = useState(true);
   const [isLoadingCreditData, setIsLoadingCreditData] = useState(false);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
   const [creditsError, setCreditsError] = useState<string | null>(null);
   const [creditDataError, setCreditDataError] = useState<string | null>(null);
+  const [documentsError, setDocumentsError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCredits();
   }, []);
+
   const fetchCredits = async () => {
     setTabIndex(0);
     setIsLoadingCredits(true);
@@ -54,6 +61,7 @@ const CreditOverview = () => {
       setCredits(fetchedCredits);
       if (fetchedCredits.length > 0) {
         fetchCreditDetails(fetchedCredits[0].loanId);
+        fetchDocuments(fetchedCredits[0].loanId);
       }
     } catch (err) {
       setCreditsError("Fehler beim laden der Kredite");
@@ -61,6 +69,7 @@ const CreditOverview = () => {
       setIsLoadingCredits(false);
     }
   };
+
   const fetchCreditDetails = async (id: number) => {
     setIsLoadingCreditData(true);
     setCreditDataError(null);
@@ -73,6 +82,22 @@ const CreditOverview = () => {
       setCreditDataError("Fehler beim laden der Details");
     } finally {
       setIsLoadingCreditData(false);
+    }
+  };
+
+  const fetchDocuments = async (id: number) => {
+    setDocuments([]);
+    setIsLoadingDocuments(true);
+    setDocumentsError(null);
+    try {
+      const service = FileService.getInstance();
+      const fetchedDocuments = await service.fetchFiles(id.toString(), "L");
+      console.log(fetchedDocuments);
+      setDocuments(fetchedDocuments);
+    } catch (err) {
+      setDocumentsError("Fehler beim laden der Dokumente");
+    } finally {
+      setIsLoadingDocuments(false);
     }
   };
 
@@ -104,6 +129,57 @@ const CreditOverview = () => {
   const handleTabsChange = (index: number) => {
     setTabIndex(index);
     fetchCreditDetails(credits[index].loanId);
+    fetchDocuments(credits[index].loanId);
+  };
+
+  const handleDelete = async (document: IDocument) => {
+    try {
+      const service = FileService.getInstance();
+      await service.deleteFile(
+        credits[tabIndex].loanId as any,
+        document.fileName
+      );
+      fetchDocuments(credits[tabIndex].loanId); // Refresh documents list
+      toast({
+        title: `Datei gelöscht: ${document.fileName}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        position: "top",
+      });
+    } catch (err) {
+      toast({
+        title: "Fehler beim Löschen der Datei",
+        description: err as string,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "top",
+      });
+    }
+  };
+
+  const downloadDocument = async (document: IDocument) => {
+    try {
+      const service = FileService.getInstance();
+      await service.downloadFile(
+        document.fileID!.toString(),
+        document.fileName
+      );
+      toast({
+        title: "Dokument heruntergeladen.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (err) {
+      toast({
+        title: "Fehler beim Herunterladen des Dokuments.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   if (isLoadingCredits) {
@@ -179,13 +255,44 @@ const CreditOverview = () => {
                         <Icon size={"lg"} as={MdOutlineKeyboardArrowDown} />
                       }
                     >
-                      Dokumente ({creditData?.documents?.length || 0})
+                      Dokumente ({documents.length || 0})
                     </MenuButton>
                     <MenuList>
-                      {!creditData?.documents ??
-                        creditData?.documents.map((document, index) => (
-                          <MenuItem key={index}>{document}</MenuItem>
-                        ))}
+                      {documents.length > 0 ? (
+                        documents.map((document, index) => (
+                          <MenuItem
+                            key={index}
+                            cursor={"default"}
+                            disabled={true}
+                            closeOnSelect={false}
+                            display={"flex"}
+                            justifyContent={"space-between"}
+                            alignItems={"center"}
+                          >
+                            <span>{document.fileName}</span>
+                            <span>
+                              <Button
+                                ml={4}
+                                colorScheme="blue"
+                                size="xs"
+                                onClick={() => downloadDocument(document)}
+                              >
+                                Download
+                              </Button>
+                              <Button
+                                ml={2}
+                                colorScheme="red"
+                                size="xs"
+                                onClick={() => handleDelete(document)}
+                              >
+                                Löschen
+                              </Button>
+                            </span>
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem>Keine Dokumente verfügbar</MenuItem>
+                      )}
                     </MenuList>
                   </Menu>
                 </ButtonGroup>
@@ -238,4 +345,4 @@ const CreditOverview = () => {
   );
 };
 
-export default CreditOverview;
+export default withAuth(CreditOverview);

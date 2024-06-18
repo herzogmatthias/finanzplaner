@@ -37,7 +37,7 @@ export interface InsuranceFormData {
   country: string;
   paymentUnitCurrency: string;
   isPaused: boolean;
-  files: FileList;
+  files: FileList | null;
 }
 
 interface InsuranceFormProps {

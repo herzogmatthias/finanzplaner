@@ -6,6 +6,7 @@ import InsuranceForm, {
 } from "@/components/insuranceForm/insuranceForm.component";
 import { SubmitHandler } from "react-hook-form";
 import InsuranceService from "@/services/Insurance.service";
+import withAuth from "@/middleware/withAuth.middleware";
 
 const Page = () => {
   const toast = useToast();
@@ -39,4 +40,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default withAuth(Page);

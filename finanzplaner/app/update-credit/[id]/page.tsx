@@ -1,6 +1,7 @@
 // pages/index.tsx or pages/[id].tsx
 "use client";
 import CreditForm from "@/components/creditform/creditForm.component";
+import withAuth from "@/middleware/withAuth.middleware";
 import { Box, Heading } from "@chakra-ui/react";
 
 const UpdateCreditPage = () => {
@@ -14,4 +15,4 @@ const UpdateCreditPage = () => {
   );
 };
 
-export default UpdateCreditPage;
+export default withAuth(UpdateCreditPage);

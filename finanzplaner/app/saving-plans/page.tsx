@@ -24,6 +24,7 @@ import HighchartsReact from "highcharts-react-official";
 import HighchartsSankey from "highcharts/modules/sankey";
 import { IStandingOrder } from "@/models/IStandingOrder";
 import { StandingOrdersService } from "@/services/StandingOrders.service";
+import withAuth from "@/middleware/withAuth.middleware";
 
 // Initialize the Sankey module
 HighchartsSankey(Highcharts);
@@ -224,4 +225,4 @@ function GroupedSavingsPlans() {
   );
 }
 
-export default GroupedSavingsPlans;
+export default withAuth(GroupedSavingsPlans);

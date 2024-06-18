@@ -18,6 +18,7 @@ import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { MdOutlineAccountBalance } from "react-icons/md";
 import CreditService from "@/services/Credit.service";
+import { FileService } from "@/services/File.service";
 
 interface CreditFormProps {
   isChanged?: boolean;
@@ -91,7 +92,12 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
   const onSubmit = async (data: FormValues) => {
     try {
       const creditService = CreditService.getInstance();
+
       if (isChanged && id) {
+        const fileService = FileService.getInstance();
+        if (data.document) {
+          await fileService.uploadFiles(id as string, data.document, "L");
+        }
         await creditService.updateCredit(id as any, data);
         toast({
           title: "Kreditdetails aktualisiert.",
@@ -288,7 +294,7 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
             {isChanged ? "Kredit Ändern" : "Kredit hinzufügen"}
           </Button>
           <Button ml={4} mr={2} variant={"outline"} type="reset">
-            Reset
+            Abbrechen
           </Button>
         </Box>
       </form>

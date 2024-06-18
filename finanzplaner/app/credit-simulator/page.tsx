@@ -29,6 +29,7 @@ import {
   TimeSeriesScale,
   ChartOptions,
 } from "chart.js";
+import withAuth from "@/middleware/withAuth.middleware";
 
 ChartJS.register(
   CategoryScale,
@@ -305,4 +306,4 @@ const CreditSimulator = () => {
   );
 };
 
-export default CreditSimulator;
+export default withAuth(CreditSimulator);

@@ -1,4 +1,5 @@
 import { InsuranceFormData } from "@/components/insuranceForm/insuranceForm.component";
+import { IDocument } from "@/models/IDocument";
 import { IChart1Data, IChart2Data, IInsurance } from "@/models/IInsurance";
 import { rejects } from "assert";
 
@@ -176,29 +177,33 @@ class InsuranceService {
     });
   }
   async addInsurance(insurance: InsuranceFormData): Promise<void> {
+    const documents: IDocument[] = await this.transformFileListToDocuments(
+      insurance.files
+    );
     return new Promise<void>((resolve, reject) => {
       fetch(`${InsuranceService.URL}insurance`, {
         method: "POST",
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("jwt")}`,
         },
         body: JSON.stringify({
-          Iban: "",
-          PolicyHolderId: insurance.accountId,
-          InsuranceType: insurance.type,
-          Country: "",
-          PaymentUnitCurrency: localStorage.getItem("currency") || "EUR",
-          DateClosed: null,
-          PaymentRate: insurance.paymentRate,
-          PaymentAmount: insurance.paymentAmount,
-          DateOpened: new Date(insurance.startDate).toISOString(),
-          InsuranceState: false,
-          AdditionalInformation: JSON.stringify(
+          iban: "",
+          policyHolderId: insurance.accountId,
+          insuranceType: insurance.type,
+          country: "",
+          paymentUnitCurrency: localStorage.getItem("currency") || "EUR",
+          paymentRate: insurance.paymentRate,
+          payment: insurance.paymentAmount,
+          startDate: new Date(insurance.startDate).toISOString(),
+          isPaused: false,
+          description: insurance.insurance,
+          additionalInformation: JSON.stringify(
             insurance.additionalInformation
           ),
-          InsuranceCompany: insurance.insuranceCompany,
-          Name: insurance.insurance,
+          insuranceCompany: insurance.insuranceCompany,
+          name: insurance.type,
+          fileRequests: documents,
         }),
       })
         .then((res) => {
@@ -212,6 +217,39 @@ class InsuranceService {
           reject("Error adding insurance.");
         });
     });
+  }
+  private transformFileListToDocuments(
+    fileList: FileList | null
+  ): Promise<IDocument[]> {
+    if (!fileList) return Promise.resolve([]);
+
+    const files: IDocument[] = [];
+    const fileReadPromises: Promise<void>[] = [];
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const reader = new FileReader();
+
+      const fileReadPromise = new Promise<void>((resolve, reject) => {
+        reader.onload = (event) => {
+          const base64 = (event.target?.result as string).split(",")[1];
+          files.push({
+            fileType: "I", // i for insurance
+            fileName: file.name,
+            fileInfo: base64,
+          });
+          resolve();
+        };
+
+        reader.onerror = (error) => reject(error);
+
+        reader.readAsDataURL(file);
+      });
+
+      fileReadPromises.push(fileReadPromise);
+    }
+
+    return Promise.all(fileReadPromises).then(() => files);
   }
 }
 

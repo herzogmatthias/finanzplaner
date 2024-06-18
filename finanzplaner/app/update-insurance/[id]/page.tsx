@@ -7,6 +7,8 @@ import InsuranceForm, {
 import { SubmitHandler } from "react-hook-form";
 import { useParams } from "next/navigation";
 import InsuranceService from "@/services/Insurance.service";
+import withAuth from "@/middleware/withAuth.middleware";
+import { FileService } from "@/services/File.service";
 
 const Page = () => {
   const { id } = useParams();
@@ -42,6 +44,11 @@ const Page = () => {
   const handleSubmit: SubmitHandler<InsuranceFormData> = async (data) => {
     try {
       const insuranceService = InsuranceService.getInstance();
+      const fileService = FileService.getInstance();
+      if (data.files) {
+        await fileService.uploadFiles(id as any, data.files, "I");
+      }
+
       await insuranceService.updateInsurance(id as any, data);
       toast({
         title: "Versicherung aktualisiert",
@@ -77,4 +84,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default withAuth(Page);

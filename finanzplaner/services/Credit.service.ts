@@ -3,6 +3,7 @@
 import { FormValues } from "@/components/creditform/creditForm.component";
 import { ICredit } from "@/models/ICredit";
 import { ICreditMasterData } from "@/models/ICreditMasterData";
+import { IDocument } from "@/models/IDocument";
 import { start } from "repl";
 
 class CreditService {
@@ -117,7 +118,11 @@ class CreditService {
     });
   }
 
-  addCredit(data: FormValues) {
+  async addCredit(data: FormValues): Promise<string> {
+    const documents: IDocument[] = await this.transformFileListToDocuments(
+      data.document
+    );
+
     return new Promise((resolve, reject) => {
       fetch(CreditService.URL + "credit", {
         method: "POST",
@@ -140,6 +145,7 @@ class CreditService {
           loanUnitCurrency: localStorage.getItem("currency") || "EUR",
           interestRateUnitCurrency: "EUR",
           loanTerm: 0,
+          fileRequests: documents,
         }),
       })
         .then((response) => {
@@ -147,10 +153,43 @@ class CreditService {
             ? resolve("Credit added.")
             : reject("Error adding credit.");
         })
-        .catch((error) => {
+        .catch(() => {
           reject("Error adding credit.");
         });
     });
+  }
+  private transformFileListToDocuments(
+    fileList: FileList | null
+  ): Promise<IDocument[]> {
+    if (!fileList) return Promise.resolve([]);
+
+    const files: IDocument[] = [];
+    const fileReadPromises: Promise<void>[] = [];
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const reader = new FileReader();
+
+      const fileReadPromise = new Promise<void>((resolve, reject) => {
+        reader.onload = (event) => {
+          const base64 = (event.target?.result as string).split(",")[1];
+          files.push({
+            fileType: "L", // l for loan
+            fileName: file.name,
+            fileInfo: base64,
+          });
+          resolve();
+        };
+
+        reader.onerror = (error) => reject(error);
+
+        reader.readAsDataURL(file);
+      });
+
+      fileReadPromises.push(fileReadPromise);
+    }
+
+    return Promise.all(fileReadPromises).then(() => files);
   }
 }
 

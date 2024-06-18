@@ -4,6 +4,7 @@ import AssetsAreaChart from "@/components/assetsareachart/assetsAreaChart.compon
 import FilterBar from "@/components/filterBar/filterBar.component";
 import RevenueExpenditureChart from "@/components/revenueexpendeturechart/revenueExpendentureChart.component";
 import TransactionList from "@/components/transactionlist/transactionList.component";
+import withAuth from "@/middleware/withAuth.middleware";
 import { Box, Heading } from "@chakra-ui/react";
 
 const Accounts = () => {
@@ -41,4 +42,4 @@ const Accounts = () => {
   );
 };
 
-export default Accounts;
+export default withAuth(Accounts);
