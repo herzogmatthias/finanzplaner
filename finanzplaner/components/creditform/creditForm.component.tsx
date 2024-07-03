@@ -169,7 +169,11 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
                 })}
               />
               <InputRightAddon>
-                {localStorage.getItem("currency") == "EUR" ? "€" : "$"}
+                {typeof window !== "undefined"
+                  ? localStorage.getItem("currency") == "EUR"
+                    ? "€"
+                    : "$"
+                  : null}
               </InputRightAddon>
             </InputGroup>
             {errors.creditAmount && (
@@ -251,7 +255,11 @@ const CreditForm = ({ isChanged }: CreditFormProps) => {
                 {...register("extraCosts")}
               />
               <InputRightAddon>
-                {localStorage.getItem("currency") == "EUR" ? "€" : "$"}
+                {typeof window !== "undefined"
+                  ? localStorage.getItem("currency") == "EUR"
+                    ? "€"
+                    : "$"
+                  : null}
               </InputRightAddon>
             </InputGroup>
             {errors.extraCosts && (

@@ -83,7 +83,7 @@ const AssetsAreaChart = () => {
       <Box>
         <Alert status="info">
           <AlertIcon />
-          Bitte drücke 'Start' um Daten zu laden.
+          Bitte drücke Start um Daten zu laden.
         </Alert>
       </Box>
     );
@@ -118,6 +118,21 @@ const AssetsAreaChart = () => {
       tooltip: {
         mode: "index",
         intersect: false,
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed !== null) {
+              label += new Intl.NumberFormat("de-DE", {
+                style: "currency",
+                currency: localStorage.getItem("currency") || "EUR",
+              }).format(context.parsed.y);
+            }
+            return label;
+          },
+        },
       },
     },
     responsive: true,
@@ -125,7 +140,7 @@ const AssetsAreaChart = () => {
     elements: { line: { fill: "start" } },
   };
 
-  return <Line data={chartData} options={options} />;
+  return <Line data={chartData} options={options as any} />;
 };
 
 export default AssetsAreaChart;

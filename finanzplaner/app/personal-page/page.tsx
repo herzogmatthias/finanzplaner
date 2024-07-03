@@ -1,3 +1,4 @@
+"use client";
 import { Box, Heading, Text, Flex } from "@chakra-ui/react";
 import CreditForm from "@/components/personalForm/personalForm.component";
 import AccountList from "@/components/accountList/accountList.component"; // Ensure this is the correct import path

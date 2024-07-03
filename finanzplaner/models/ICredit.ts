@@ -9,12 +9,12 @@ export interface ICredit {
   term: number;
   additionalCosts: number;
   totalAmount: number;
-  nextPaymentDate: Date;
+  nextPaymentDate: string;
   documents: string[];
   paymentRate: string;
   frequency: string;
   loanStatus: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   loanUnitCurrency: string;
 }

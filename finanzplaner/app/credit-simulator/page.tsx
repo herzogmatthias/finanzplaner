@@ -122,7 +122,7 @@ const CreditSimulator = () => {
       labels,
       datasets: [
         {
-          label: "Outstanding Credit",
+          label: "Auständiger Kredit",
           data,
           fill: false,
           backgroundColor: "rgb(54, 162, 235)",

@@ -57,7 +57,11 @@ const SideNav = () => {
       title: "Analysen",
       items: [
         { icon: MdOutlineAccountBalance, label: "Konten", route: "/accounts" },
-        { icon: MdOutlineRefresh, label: "Sparpläne", route: "/saving-plans" },
+        {
+          icon: MdOutlineRefresh,
+          label: "Daueraufträge",
+          route: "/saving-plans",
+        },
         {
           icon: MdOutlineRealEstateAgent,
           label: "Kredite",

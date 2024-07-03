@@ -33,7 +33,7 @@ const Page = () => {
         paymentRate: details.frequency,
         type: details.insuranceType,
         isPaused: details.insuranceState,
-        files: [] as any[],
+        files: null,
         ...details,
       });
     };
@@ -45,7 +45,7 @@ const Page = () => {
     try {
       const insuranceService = InsuranceService.getInstance();
       const fileService = FileService.getInstance();
-      if (data.files) {
+      if (data.files && data.files.length > 0) {
         await fileService.uploadFiles(id as any, data.files, "I");
       }
 

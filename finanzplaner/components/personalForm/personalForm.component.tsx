@@ -31,7 +31,10 @@ const PersonalForm = () => {
     defaultValues: {
       email: "",
       username: "",
-      currencyUnit: localStorage.getItem("currency") || "EUR", // Default to Euros
+      currencyUnit:
+        typeof window !== "undefined"
+          ? localStorage.getItem("currency") || "EUR"
+          : "EUR", // Default to Euros
     },
   });
 
@@ -47,7 +50,7 @@ const PersonalForm = () => {
         data.currencyUnit
       );
       toast({
-        title: "Profile updated successfully.",
+        title: "Profil erfolgreich aktualisiert.",
         status: "success",
         duration: 5000,
         isClosable: true,
@@ -55,7 +58,7 @@ const PersonalForm = () => {
     } catch (err) {
       console.log(err);
       toast({
-        title: "Failed to update profile.",
+        title: "Fehler beim Aktualisieren des Profils.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -84,14 +87,14 @@ const PersonalForm = () => {
             )}
           </FormControl>
           <FormControl isInvalid={!!errors.username}>
-            <FormLabel htmlFor="username">Username</FormLabel>
+            <FormLabel htmlFor="username">Benutzername</FormLabel>
             <Input id="username" type="text" {...register("username")} />
             {errors.username && (
               <FormErrorMessage>{errors.username.message}</FormErrorMessage>
             )}
           </FormControl>
           <FormControl isInvalid={!!errors.currencyUnit}>
-            <FormLabel htmlFor="currencyUnit">Currency Unit</FormLabel>
+            <FormLabel htmlFor="currencyUnit">Währungseinheit</FormLabel>
             <Select id="currencyUnit" {...register("currencyUnit")}>
               <option value="EUR">Euro (EUR)</option>
               <option value="USD">US Dollar (USD)</option>
@@ -103,7 +106,7 @@ const PersonalForm = () => {
         </VStack>
         <Box mt={8} display={"flex"} justifyContent={"end"}>
           <Button colorScheme="blue" type="submit">
-            Update Profile
+            Profil ändern
           </Button>
           <Button ml={4} colorScheme="red" type="reset">
             Reset

@@ -1,6 +1,5 @@
 // services/AccountService.ts
 import { IFilters } from "@/context/filter.context";
-import { transactions } from "@/data/transactions.data";
 import { ITransaction } from "@/models/ITransaction";
 import { MdAccountBalanceWallet, MdAccountBalance } from "react-icons/md";
 

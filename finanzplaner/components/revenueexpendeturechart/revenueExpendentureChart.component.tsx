@@ -76,7 +76,7 @@ const RevenueExpenditureChart = () => {
       <Box>
         <Alert status="info">
           <AlertIcon />
-          Bitte drücke 'Start' um die Daten zu laden.
+          Bitte drücke Start um die Daten zu laden.
         </Alert>
       </Box>
     );
@@ -129,13 +129,28 @@ const RevenueExpenditureChart = () => {
       tooltip: {
         mode: "index",
         intersect: false,
+        callbacks: {
+          label: function (context: any) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed !== null) {
+              label += new Intl.NumberFormat("de-DE", {
+                style: "currency",
+                currency: localStorage.getItem("currency") || "EUR",
+              }).format(context.parsed.y);
+            }
+            return label;
+          },
+        },
       },
     },
     responsive: true,
     maintainAspectRatio: false,
   };
 
-  return <Bar data={chartData} options={options} />;
+  return <Bar data={chartData} options={options as any} />;
 };
 
 export default RevenueExpenditureChart;

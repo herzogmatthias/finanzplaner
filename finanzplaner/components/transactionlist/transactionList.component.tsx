@@ -93,7 +93,7 @@ const TransactionList = () => {
       <Box>
         <Alert status="info">
           <AlertIcon />
-          Bitte drücke 'Start' um die Transaktionen zu laden.
+          Bitte drücke Start um die Transaktionen zu laden.
         </Alert>
       </Box>
     );
@@ -147,7 +147,7 @@ const TransactionList = () => {
                 </VStack>
                 <VStack align="end">
                   <Tag colorScheme={item.amount >= 0 ? "green" : "red"}>
-                    {item.amount >= 0 ? "Revenue" : "Expenditure"}
+                    {item.amount >= 0 ? "Einnahme" : "Ausgabe"}
                   </Tag>
                   <Text fontSize="sm">Empfänger: {item.merchantName}</Text>
                   <Text fontSize="sm">Sender: {item.transactionIssuer}</Text>

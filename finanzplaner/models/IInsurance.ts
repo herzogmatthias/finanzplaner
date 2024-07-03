@@ -21,7 +21,7 @@ export interface IInsurance {
   insuranceState: boolean;
   additionalInformation: IAdditionalInformation[];
   nextPayment: string;
-  files: string[];
+  //files: string[];
 }
 
 export interface IChart1Data {

@@ -37,7 +37,7 @@ export interface InsuranceFormData {
   country: string;
   paymentUnitCurrency: string;
   isPaused: boolean;
-  files: FileList | null;
+  files: any | null;
 }
 
 interface InsuranceFormProps {
@@ -172,7 +172,11 @@ const InsuranceForm: React.FC<InsuranceFormProps> = ({
                 })}
               />
               <InputRightAddon>
-                {localStorage.getItem("currency") === "USD" ? "$" : "€"}
+                {typeof window !== "undefined"
+                  ? localStorage.getItem("currency") === "USD"
+                    ? "$"
+                    : "€"
+                  : null}
               </InputRightAddon>
             </InputGroup>
             {errors.paymentAmount && (

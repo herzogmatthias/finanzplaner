@@ -76,7 +76,7 @@ const CreditChart = ({
   const plugins = [
     {
       id: "custom_canvas_background_color",
-      beforeDraw: function (chart) {
+      beforeDraw: function (chart: any) {
         if (chart.config.options.elements.center) {
           // Get ctx from string
           var ctx = chart.ctx;
@@ -161,48 +161,50 @@ const CreditChart = ({
         width={350}
         height={350}
         plugins={plugins}
-        options={{
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: "90%",
-          elements: {
-            center: {
-              text:
-                "Gesamtbetrag " +
-                new Intl.NumberFormat("de-DE", {
-                  style: "currency",
-                  currency: "EUR",
-                }).format(calculateTotalAmountToBePaidBack()),
-              color: "#000000", // Default is #000000
-              sidePadding: 20, // Default is 20 (as a percentage)
-              minFontSize: 10, // Default is 20 (in px), set to false and text will not wrap.
-              lineHeight: 25, // Default is 25 (in px), used for when text wraps
-            },
-          },
-          plugins: {
-            tooltip: {
-              callbacks: {
-                label: function (context) {
-                  let label = context.label || "";
-                  if (label) {
-                    label += ": ";
-                  }
-                  if (context.parsed !== null) {
-                    label += new Intl.NumberFormat("de-DE", {
-                      style: "currency",
-                      currency: "EUR",
-                    }).format(context.parsed);
-                  }
-                  return label;
-                },
+        options={
+          {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "90%",
+            elements: {
+              center: {
+                text:
+                  "Gesamtbetrag " +
+                  new Intl.NumberFormat("de-DE", {
+                    style: "currency",
+                    currency: localStorage.getItem("currency") || "EUR",
+                  }).format(calculateTotalAmountToBePaidBack()),
+                color: "#000000", // Default is #000000
+                sidePadding: 20, // Default is 20 (as a percentage)
+                minFontSize: 10, // Default is 20 (in px), set to false and text will not wrap.
+                lineHeight: 25, // Default is 25 (in px), used for when text wraps
               },
             },
-            legend: {
-              display: true,
-              position: "bottom",
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function (context: any) {
+                    let label = context.label || "";
+                    if (label) {
+                      label += ": ";
+                    }
+                    if (context.parsed !== null) {
+                      label += new Intl.NumberFormat("de-DE", {
+                        style: "currency",
+                        currency: localStorage.getItem("currency") || "EUR",
+                      }).format(context.parsed);
+                    }
+                    return label;
+                  },
+                },
+              },
+              legend: {
+                display: true,
+                position: "bottom",
+              },
             },
-          },
-        }}
+          } as any
+        }
       />
     </Box>
   );

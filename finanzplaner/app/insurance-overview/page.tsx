@@ -219,7 +219,7 @@ const InsuranceOverview = () => {
       </Heading>
 
       <Box display="flex">
-        <Box flex="1" mr={4}>
+        <Box flex={1} mr={4}>
           <Tabs index={tabIndex} onChange={handleTabsChange}>
             <Box
               display={"flex"}
@@ -228,7 +228,17 @@ const InsuranceOverview = () => {
               mr={4}
             >
               <Box flex={1}>
-                <TabList overflow={"hidden"} width={"80%"}>
+                <TabList
+                  overflowX={"auto"}
+                  overflowY={"hidden"}
+                  w={"80%"}
+                  sx={{
+                    scrollbarWidth: "thin",
+                    "::-webkit-scrollbar": {
+                      display: "none",
+                    },
+                  }}
+                >
                   {insurances.map((insurance) => (
                     <Tab key={insurance.insuranceId}>
                       {insurance.description}

@@ -16,6 +16,7 @@ const CostHistoryChart = () => {
     const fetchData = async () => {
       const service = InsuranceService.getInstance();
       const chartData = await service.fetchChart2Data();
+      console.log(chartData);
 
       const groupedData: IGroupedData = chartData.insuranceCosts.reduce(
         (acc: IGroupedData, { month, insurance, cost }) => {
@@ -60,6 +61,23 @@ const CostHistoryChart = () => {
             plugins: {
               legend: {
                 position: "bottom",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    let label = context.dataset.label || "";
+                    if (label) {
+                      label += ": ";
+                    }
+                    if (context.parsed !== null) {
+                      label += new Intl.NumberFormat("de-DE", {
+                        style: "currency",
+                        currency: localStorage.getItem("currency") || "EUR",
+                      }).format(context.parsed.y);
+                    }
+                    return label;
+                  },
+                },
               },
             },
             responsive: true,

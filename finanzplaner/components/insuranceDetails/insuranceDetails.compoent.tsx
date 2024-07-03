@@ -24,7 +24,7 @@ const InsuranceDetails = ({
   additionalInformation,
   nextPayment,
   insuranceType,
-  files,
+  paymentUnitCurrency,
 }: IInsurance) => {
   const frequencyMap: { [key: string]: string } = {
     Monthly: "Monatlich",
@@ -90,7 +90,10 @@ const InsuranceDetails = ({
           Kosten
         </Text>
         <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-          € {paymentAmount.toFixed(2)}
+          {new Intl.NumberFormat("de-DE", {
+            style: "currency",
+            currency: paymentUnitCurrency,
+          }).format(paymentAmount)}
         </Text>
       </Flex>
     </Box>

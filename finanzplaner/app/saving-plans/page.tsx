@@ -26,8 +26,9 @@ import { IStandingOrder } from "@/models/IStandingOrder";
 import { StandingOrdersService } from "@/services/StandingOrders.service";
 import withAuth from "@/middleware/withAuth.middleware";
 
-// Initialize the Sankey module
-HighchartsSankey(Highcharts);
+if (typeof Highcharts === "object") {
+  HighchartsSankey(Highcharts);
+}
 
 interface IPlanCardProps {
   accountName: string;
@@ -136,39 +137,6 @@ function GroupedSavingsPlans() {
     }, {});
   }, [plans]);
 
-  const options = {
-    title: {
-      text: "",
-    },
-    credits: {
-      enabled: false,
-    },
-    tooltip: {
-      headerFormat: null,
-      pointFormat:
-        "{point.fromNode.name} \u2192 {point.toNode.name}: {point.weight:.2f} " +
-        localStorage.getItem("currency"),
-      nodeFormat:
-        "{point.name}: {point.sum:.2f} " + localStorage.getItem("currency"),
-    },
-    series: [
-      {
-        keys: ["from", "to", "weight"],
-        data: data,
-        type: "sankey",
-        name: "Geldfluss",
-      },
-    ],
-    plotOptions: {
-      series: {
-        colorByPoint: true,
-      },
-      sankey: {
-        color: ["red", "#FFC300", "#DAF7A6"],
-      },
-    },
-  };
-
   const cardBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.600", "gray.200");
   const iconColor = useColorModeValue("blue.500", "blue.300");
@@ -195,9 +163,44 @@ function GroupedSavingsPlans() {
             Geldfluss
           </Heading>
           {plans.length > 0 ? (
-            <HighchartsReact highcharts={Highcharts} options={options} />
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={{
+                title: {
+                  text: "",
+                },
+                credits: {
+                  enabled: false,
+                },
+                tooltip: {
+                  headerFormat: null,
+                  pointFormat:
+                    "{point.fromNode.name} \u2192 {point.toNode.name}: {point.weight:.2f} " +
+                    localStorage.getItem("currency"),
+                  nodeFormat:
+                    "{point.name}: {point.sum:.2f} " +
+                    localStorage.getItem("currency"),
+                },
+                series: [
+                  {
+                    keys: ["from", "to", "weight"],
+                    data: data,
+                    type: "sankey",
+                    name: "Geldfluss",
+                  },
+                ],
+                plotOptions: {
+                  series: {
+                    colorByPoint: true,
+                  },
+                  sankey: {
+                    color: ["red", "#FFC300", "#DAF7A6"],
+                  },
+                },
+              }}
+            />
           ) : (
-            <Text>Keine Sparpläne vorhanden.</Text>
+            <Text>Keine Daueraufträge vorhanden.</Text>
           )}
         </Box>
       </Skeleton>
@@ -218,7 +221,7 @@ function GroupedSavingsPlans() {
             />
           ))
         ) : (
-          <Text mt={4}>Keine Sparpläne vorhanden.</Text>
+          <Text mt={4}>Keine Daueraufträge vorhanden.</Text>
         )}
       </SimpleGrid>
     </Box>

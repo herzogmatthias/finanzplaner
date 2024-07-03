@@ -12,6 +12,7 @@ const IntervalPaymentChart = () => {
     const fetchData = async () => {
       const service = InsuranceService.getInstance();
       const chartData = await service.fetchChart1Data();
+      console.log(chartData);
       setData({
         labels: ["Monatlich", "Quartalsweise", "Jährlich"],
         datasets: [
@@ -42,6 +43,23 @@ const IntervalPaymentChart = () => {
             plugins: {
               legend: {
                 position: "bottom",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    let label = context.dataset.label || "";
+                    if (label) {
+                      label += ": ";
+                    }
+                    if (context.parsed !== null) {
+                      label += new Intl.NumberFormat("de-DE", {
+                        style: "currency",
+                        currency: localStorage.getItem("currency") || "EUR",
+                      }).format(context.parsed);
+                    }
+                    return label;
+                  },
+                },
               },
             },
             responsive: true,

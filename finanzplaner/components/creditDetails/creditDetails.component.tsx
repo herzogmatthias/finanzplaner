@@ -47,7 +47,7 @@ const CreditDetails = ({
 
   const calculateAmountPaidBack = (
     monthlyPayment: number,
-    startDate: Date,
+    startDate: string,
     currentDate: Date
   ) => {
     const start = new Date(startDate);
